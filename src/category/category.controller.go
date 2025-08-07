@@ -1,68 +1,95 @@
+// src/category/controller.go
+
 package category
 
 import (
 	"net/http"
 	"strconv"
+	"todo_app/src/common/response"
 
 	"github.com/gin-gonic/gin"
 )
 
-func CreateCategory(c *gin.Context) {
+type CategoryController struct {
+	service ICategoryService
+}
+
+func NewCategoryController(service ICategoryService) *CategoryController {
+	return &CategoryController{
+		service: service,
+	}
+}
+
+func (ctrl *CategoryController) CreateCategory(c *gin.Context) {
 	var dto CreateCategoryDTO
 	if err := c.ShouldBindJSON(&dto); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, response.APIResponse{
+			StatusCode: http.StatusBadRequest,
+			Message:    "Cuerpo de la petición inválido.",
+			Error:      err.Error(),
+		})
 		return
 	}
 
-	// ##########################################################################
-	// ##### INICIO DE LA LÓGICA FALTANTE (SERVICIO) #####
-	//
-	// 1. Llamar al servicio: categoryService.Create(dto)
-	// 2. El servicio debe:
-	//    a. Validar que no exista otra categoría con el mismo nombre.
-	//    b. Guardar la nueva categoría en la base de datos.
-	// 3. Devolver la nueva categoría creada.
-	//
-	// ##### FIN DE LA LÓGICA FALTANTE #####
-	// ##########################################################################
+	newCategory, err := ctrl.service.CreateCategory(dto)
+	if err != nil {
+		c.JSON(http.StatusConflict, response.APIResponse{
+			StatusCode: http.StatusConflict,
+			Message:    "Error al crear la categoría.",
+			Error:      err.Error(),
+		})
+		return
+	}
 
-	c.JSON(http.StatusCreated, gin.H{"message": "Categoría creada exitosamente", "data": dto})
+	c.JSON(http.StatusCreated, response.APIResponse{
+		StatusCode: http.StatusCreated,
+		Message:    "Categoría creada exitosamente.",
+		Data:       newCategory,
+	})
 }
 
-func GetCategories(c *gin.Context) {
-	// ##########################################################################
-	// ##### INICIO DE LA LÓGICA FALTANTE (SERVICIO) #####
-	//
-	// 1. Llamar al servicio: categoryService.GetAll()
-	// 2. El servicio debe consultar la base de datos y traer todas las categorías.
-	// 3. Devolver la lista de categorías encontradas.
-	//
-	// ##### FIN DE LA LÓGICA FALTANTE #####
-	// ##########################################################################
+func (ctrl *CategoryController) GetCategories(c *gin.Context) {
+	categories, err := ctrl.service.GetAllCategories()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, response.APIResponse{
+			StatusCode: http.StatusInternalServerError,
+			Message:    "Error al obtener las categorías.",
+			Error:      err.Error(),
+		})
+		return
+	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Lista de categorías", "data": []string{"Ejemplo: Hogar", "Ejemplo: Trabajo"}})
+	c.JSON(http.StatusOK, response.APIResponse{
+		StatusCode: http.StatusOK,
+		Message:    "Categorías obtenidas exitosamente.",
+		Data:       categories,
+	})
 }
 
-func DeleteCategory(c *gin.Context) {
+func (ctrl *CategoryController) DeleteCategory(c *gin.Context) {
 	idParam := c.Param("id")
 	categoryID, err := strconv.Atoi(idParam)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "ID inválido"})
+		c.JSON(http.StatusBadRequest, response.APIResponse{
+			StatusCode: http.StatusBadRequest,
+			Message:    "El ID proporcionado no es válido.",
+			Error:      "El ID debe ser un número entero.",
+		})
 		return
 	}
 
-	// ##########################################################################
-	// ##### INICIO DE LA LÓGICA FALTANTE (SERVICIO) #####
-	//
-	// 1. Llamar al servicio: categoryService.Delete(uint(categoryID))
-	// 2. El servicio debe:
-	//    a. Verificar si la categoría existe.
-	//    b. Opcional: Decidir qué hacer con las tareas asociadas (moverlas, etc.).
-	//    c. Eliminar la categoría de la base de datos.
-	// 3. Devolver una confirmación.
-	//
-	// ##### FIN DE LA LÓGICA FALTANTE #####
-	// ##########################################################################
+	err = ctrl.service.DeleteCategory(uint(categoryID))
+	if err != nil {
+		c.JSON(http.StatusNotFound, response.APIResponse{
+			StatusCode: http.StatusNotFound,
+			Message:    "Error al eliminar la categoría.",
+			Error:      err.Error(),
+		})
+		return
+	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Categoría " + strconv.Itoa(categoryID) + " eliminada"})
+	c.JSON(http.StatusOK, response.APIResponse{
+		StatusCode: http.StatusOK,
+		Message:    "Categoría eliminada exitosamente.",
+	})
 }

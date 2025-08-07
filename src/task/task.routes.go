@@ -1,16 +1,14 @@
-// src/task/routes.go
-
 package task
 
 import "github.com/gin-gonic/gin"
 
-func RegisterTaskRoutes(router *gin.RouterGroup) {
+func RegisterTaskRoutes(router *gin.RouterGroup, ctrl *TaskController) {
 	taskRoutes := router.Group("/tasks")
 	{
-		taskRoutes.POST("/", CreateTask)
-		taskRoutes.GET("/user", GetTasksByUser)
-		taskRoutes.GET("/:id", GetTaskByID)
-		taskRoutes.PUT("/:id", UpdateTask)
-		taskRoutes.DELETE("/:id", DeleteTask)
+		taskRoutes.POST("/", ctrl.CreateTask)
+		taskRoutes.GET("/user", ctrl.GetTasksByUser)
+		taskRoutes.GET("/:id", ctrl.GetTaskByID)
+		taskRoutes.PUT("/:id", ctrl.UpdateTask)
+		taskRoutes.DELETE("/:id", ctrl.DeleteTask)
 	}
 }

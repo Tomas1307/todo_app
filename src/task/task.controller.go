@@ -5,121 +5,105 @@ package task
 import (
 	"net/http"
 	"strconv"
+	"todo_app/src/common/response"
 
 	"github.com/gin-gonic/gin"
 )
 
-// CreateTask maneja la creación de una nueva tarea.
-func CreateTask(c *gin.Context) {
+// TaskController contiene la dependencia del servicio.
+type TaskController struct {
+	service ITaskService
+}
+
+// NewTaskController es el constructor para inyectar el servicio.
+func NewTaskController(service ITaskService) *TaskController {
+	return &TaskController{
+		service: service,
+	}
+}
+
+func (ctrl *TaskController) CreateTask(c *gin.Context) {
 	var dto CreateTaskDTO
 	if err := c.ShouldBindJSON(&dto); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, response.APIResponse{StatusCode: http.StatusBadRequest, Error: err.Error()})
 		return
 	}
 
-	// ##########################################################################
-	// ##### INICIO DE LA LÓGICA FALTANTE (SERVICIO) #####
-	//
-	// 1. Obtener el ID del usuario autenticado (del token JWT).
-	// 2. Llamar al servicio: taskService.Create(userID, dto)
-	// 3. El servicio debe:
-	//    a. Validar que la CategoryID exista.
-	//    b. Crear la entidad Task y guardarla en la base de datos.
-	// 4. Manejar posibles errores y devolver la nueva tarea creada.
-	//
-	// ##### FIN DE LA LÓGICA FALTANTE #####
-	// ##########################################################################
-
-	c.JSON(http.StatusCreated, gin.H{"message": "201: Task created", "data": dto})
-}
-
-// GetTasksByUser obtiene todas las tareas de un usuario específico.
-func GetTasksByUser(c *gin.Context) {
-	// ##########################################################################
-	// ##### INICIO DE LA LÓGICA FALTANTE (SERVICIO) #####
-	//
-	// 1. Obtener el ID del usuario autenticado (del token JWT).
-	// 2. Llamar al servicio: taskService.GetByUserID(userID)
-	// 3. El servicio debe:
-	//    a. Consultar la base de datos por todas las tareas asociadas al userID.
-	//    b. Manejar filtros opcionales (ej: por categoría o estado).
-	// 4. Devolver la lista de tareas encontradas.
-	//
-	// ##### FIN DE LA LÓGICA FALTANTE #####
-	// ##########################################################################
-
-	c.JSON(http.StatusOK, gin.H{"message": "Lista de tareas del usuario"})
-}
-
-// GetTaskByID obtiene una tarea por su ID.
-func GetTaskByID(c *gin.Context) {
-	idParam := c.Param("id")
-	taskID, err := strconv.Atoi(idParam) // 1. Aquí declaras taskID
+	// NOTA: Usamos un userID hardcodeado (1). En el futuro, vendrá de un token JWT.
+	newTask, err := ctrl.service.CreateTask(1, dto)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "ID inválido"})
+		c.JSON(http.StatusInternalServerError, response.APIResponse{StatusCode: http.StatusInternalServerError, Error: err.Error()})
 		return
 	}
 
-	// ##### LÓGICA FALTANTE #####
-	// (Aquí es donde se USARÁ taskID en el futuro)
-
-	// 2. Aquí usas idParam (el texto), pero no taskID (el número)
-	c.JSON(http.StatusOK, gin.H{"message": "Detalles de la tarea " + strconv.Itoa(taskID)})
+	c.JSON(http.StatusCreated, response.APIResponse{StatusCode: http.StatusCreated, Message: "Tarea creada.", Data: newTask})
 }
 
-// UpdateTask actualiza una tarea existente.
-func UpdateTask(c *gin.Context) {
-	idParam := c.Param("id")
-	taskID, err := strconv.Atoi(idParam) // Se declara taskID
+func (ctrl *TaskController) GetTasksByUser(c *gin.Context) {
+	// NOTA: Usamos un userID hardcodeado (1). En el futuro, vendrá de un token JWT.
+	tasks, err := ctrl.service.GetTasksByUserID(1)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "ID inválido"})
+		c.JSON(http.StatusInternalServerError, response.APIResponse{StatusCode: http.StatusInternalServerError, Error: err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, response.APIResponse{StatusCode: http.StatusOK, Message: "Tareas del usuario.", Data: tasks})
+}
+
+func (ctrl *TaskController) GetTaskByID(c *gin.Context) {
+	idParam := c.Param("id")
+	taskID, err := strconv.Atoi(idParam)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.APIResponse{StatusCode: http.StatusBadRequest, Error: "ID inválido."})
+		return
+	}
+
+	// NOTA: Usamos un userID hardcodeado (1).
+	task, err := ctrl.service.GetTaskByID(1, uint(taskID))
+	if err != nil {
+		c.JSON(http.StatusNotFound, response.APIResponse{StatusCode: http.StatusNotFound, Error: err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, response.APIResponse{StatusCode: http.StatusOK, Message: "Detalle de la tarea.", Data: task})
+}
+
+func (ctrl *TaskController) UpdateTask(c *gin.Context) {
+	idParam := c.Param("id")
+	taskID, err := strconv.Atoi(idParam)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.APIResponse{StatusCode: http.StatusBadRequest, Error: "ID inválido."})
 		return
 	}
 
 	var dto UpdateTaskDTO
 	if err := c.ShouldBindJSON(&dto); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, response.APIResponse{StatusCode: http.StatusBadRequest, Error: err.Error()})
 		return
 	}
 
-	// ##########################################################################
-	// ##### INICIO DE LA LÓGICA FALTANTE (SERVICIO) #####
-	//
-	// 1. Obtener el ID del usuario autenticado (del token JWT).
-	// 2. Llamar al servicio: taskService.Update(userID, uint(taskID), dto)
-	// 3. El servicio debe:
-	//    a. Verificar que la tarea exista y pertenezca al usuario.
-	//    b. Aplicar las actualizaciones del DTO a la entidad.
-	//    c. Guardar los cambios en la base de datos.
-	// 4. Devolver la tarea actualizada.
-	//
-	// ##### FIN DE LA LÓGICA FALTANTE #####
-	// ##########################################################################
+	// NOTA: Usamos un userID hardcodeado (1).
+	updatedTask, err := ctrl.service.UpdateTask(1, uint(taskID), dto)
+	if err != nil {
+		c.JSON(http.StatusNotFound, response.APIResponse{StatusCode: http.StatusNotFound, Error: err.Error()})
+		return
+	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Tarea " + strconv.Itoa(taskID) + " actualizada", "data": dto})
+	c.JSON(http.StatusOK, response.APIResponse{StatusCode: http.StatusOK, Message: "Tarea actualizada.", Data: updatedTask})
 }
 
-// DeleteTask elimina una tarea.
-func DeleteTask(c *gin.Context) {
+func (ctrl *TaskController) DeleteTask(c *gin.Context) {
 	idParam := c.Param("id")
-	taskID, err := strconv.Atoi(idParam) // Se declara taskID
+	taskID, err := strconv.Atoi(idParam)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "ID inválido"})
+		c.JSON(http.StatusBadRequest, response.APIResponse{StatusCode: http.StatusBadRequest, Error: "ID inválido."})
 		return
 	}
 
-	// ##########################################################################
-	// ##### INICIO DE LA LÓGICA FALTANTE (SERVICIO) #####
-	//
-	// 1. Obtener el ID del usuario autenticado (del token JWT).
-	// 2. Llamar al servicio: taskService.Delete(userID, uint(taskID))
-	// 3. El servicio debe:
-	//    a. Verificar que la tarea exista y pertenezca al usuario.
-	//    b. Eliminar la tarea de la base de datos.
-	// 4. Devolver una confirmación.
-	//
-	// ##### FIN DE LA LÓGICA FALTANTE #####
-	// ##########################################################################
+	// NOTA: Usamos un userID hardcodeado (1).
+	err = ctrl.service.DeleteTask(1, uint(taskID))
+	if err != nil {
+		c.JSON(http.StatusNotFound, response.APIResponse{StatusCode: http.StatusNotFound, Error: err.Error()})
+		return
+	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "201: Tarea " + strconv.Itoa(taskID) + " eliminada"})
+	c.JSON(http.StatusOK, response.APIResponse{StatusCode: http.StatusOK, Message: "Tarea eliminada."})
 }
