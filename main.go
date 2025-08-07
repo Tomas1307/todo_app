@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"todo_app/src/category"
+	"todo_app/src/task"
 )
 
 func main() {
@@ -26,6 +27,15 @@ func main() {
 		category.RegisterCategoryRoutes(apiV1, categoryController)
 
 		// (Aquí harías lo mismo para user y task)
+
+		// 1. Creas la instancia del servicio
+		taskService := task.NewTaskService()
+
+		// 2. Creas la instancia del controlador, "inyectándole" el servicio
+		taskController := task.NewTaskController(taskService)
+
+		// 3. Registras las rutas, pasándole el controlador
+		task.RegisterTaskRoutes(apiV1, taskController)
 	}
 
 	log.Println("Servidor iniciado en http://localhost:8080")
