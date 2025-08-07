@@ -9,6 +9,7 @@ import (
 
 	"todo_app/src/category"
 	"todo_app/src/task"
+	"todo_app/src/user"
 )
 
 func main() {
@@ -36,6 +37,15 @@ func main() {
 
 		// 3. Registras las rutas, pasándole el controlador
 		task.RegisterTaskRoutes(apiV1, taskController)
+
+		// 1. Creas la instancia del servicio
+		userService := user.NewUserService()
+
+		// 2. Creas la instancia del controlador, "inyectándole" el servicio
+		userController := user.NewUserController(userService)
+
+		// 3. Registras las rutas, pasándole el controlador
+		user.RegisterUserRoutes(apiV1, userController)
 	}
 
 	log.Println("Servidor iniciado en http://localhost:8080")
