@@ -1,5 +1,3 @@
-// src/config/database/database.go
-
 package database
 
 import (

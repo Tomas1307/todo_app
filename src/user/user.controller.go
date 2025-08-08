@@ -1,5 +1,3 @@
-// src/user/controller.go
-
 package user
 
 import (

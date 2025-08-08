@@ -1,5 +1,3 @@
-// src/category/controller.go
-
 package category
 
 import (
