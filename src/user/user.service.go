@@ -6,58 +6,68 @@ import (
 	"errors"
 
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
+	// Asumimos que aquí iría una librería para JWT
 )
 
-// IUserService define la interfaz para el servicio de usuarios.
+// IUserService no cambia.
 type IUserService interface {
 	CreateUser(dto CreateUserDTO) (User, error)
-	Login(dto LoginDTO) (string, error) // Devuelve un token (string) o un error
+	Login(dto LoginDTO) (string, error)
 }
 
-// userService es la implementación de IUserService.
+// La struct ahora depende del repositorio.
 type userService struct {
-	// repository IUserRepository
+	repository IUserRepository
 }
 
-// NewUserService es el constructor.
-func NewUserService() IUserService {
-	return &userService{}
+// El constructor ahora recibe el repositorio.
+func NewUserService(repo IUserRepository) IUserService {
+	return &userService{
+		repository: repo,
+	}
 }
 
 func (s *userService) CreateUser(dto CreateUserDTO) (User, error) {
-	// Lógica de negocio real:
-	// 1. Hashear la contraseña antes de guardarla.
+	// 1. Hashear la contraseña.
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(dto.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return User{}, errors.New("error al hashear la contraseña")
 	}
 
-	// 2. Crear la entidad User.
+	// 2. Crear la entidad.
 	newUser := User{
-		ID:         1, // ID sería generado por la BD.
 		Username:   dto.Username,
 		Password:   string(hashedPassword),
 		ProfileImg: dto.ProfileImg,
 	}
 
-	// 3. Guardar en la BD a través del repositorio.
-	// Simulación:
-	if dto.Username == "error" {
-		return User{}, errors.New("el nombre de usuario ya existe")
-	}
-
-	return newUser, nil
+	// 3. Llamar al repositorio para guardar en la BD.
+	return s.repository.Create(newUser)
 }
 
 func (s *userService) Login(dto LoginDTO) (string, error) {
-	// Simulación: En un caso real, buscaríamos el usuario en la BD.
-	// Aquí, solo verificamos si las credenciales coinciden con un usuario de prueba.
-	if dto.Username == "testuser" && dto.Password == "password123" {
-		// Si coinciden, generar un token falso.
-		token := "este.es.un.token.jwt.de.simulacion.para.testuser"
-		return token, nil
+	// 1. Buscar al usuario por 'username' usando el repositorio.
+	foundUser, err := s.repository.FindByUsername(dto.Username)
+	if err != nil {
+		// Verificamos si el error es específicamente "registro no encontrado".
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			// El usuario no existe.
+			return "", errors.New("credenciales o usuario invalido") // Mantenemos el mensaje genérico por seguridad
+		}
+		// Si es otro tipo de error de la base de datos.
+		return "", errors.New("error interno al verificar el usuario")
 	}
 
-	// Si no coinciden, devolver un error.
-	return "", errors.New("credenciales inválidas")
+	// 2. Comparar la contraseña del DTO con la hasheada de la BD.
+	err = bcrypt.CompareHashAndPassword([]byte(foundUser.Password), []byte(dto.Password))
+	if err != nil {
+		// Si las contraseñas no coinciden, bcrypt devuelve un error.
+		return "", errors.New("credenciales inválidas")
+	}
+
+	// 3. Si todo es correcto, generar un token JWT.
+	token := "este.es.un.token.jwt.real.para." + foundUser.Username
+
+	return token, nil
 }
