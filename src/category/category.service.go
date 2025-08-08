@@ -1,6 +1,5 @@
 package category
 
-// La interfaz no cambia.
 type ICategoryService interface {
 	CreateCategory(dto CreateCategoryDTO) (Category, error)
 	GetAllCategories() ([]Category, error)

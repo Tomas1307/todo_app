@@ -1,5 +1,3 @@
-// src/user/repository.go
-
 package user
 
 import (
