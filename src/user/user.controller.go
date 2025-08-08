@@ -3,7 +3,10 @@
 package user
 
 import (
+	"fmt"
 	"net/http"
+	"path/filepath"
+	"time"
 	"todo_app/src/common/response"
 
 	"github.com/gin-gonic/gin"
@@ -20,10 +23,33 @@ func NewUserController(service IUserService) *UserController {
 }
 
 func (ctrl *UserController) CreateUser(c *gin.Context) {
-	var dto CreateUserDTO
-	if err := c.ShouldBindJSON(&dto); err != nil {
-		c.JSON(http.StatusBadRequest, response.APIResponse{StatusCode: http.StatusBadRequest, Error: err.Error()})
+	username := c.PostForm("username")
+	password := c.PostForm("password")
+
+	if username == "" || password == "" {
+		c.JSON(http.StatusBadRequest, response.APIResponse{StatusCode: http.StatusBadRequest, Error: "El usuario y la contraseña son requeridos."})
 		return
+	}
+
+	var profileImgPath string
+	file, err := c.FormFile("profile_img")
+
+	if err == nil {
+		extension := filepath.Ext(file.Filename)
+		newFileName := fmt.Sprintf("%d%s", time.Now().UnixNano(), extension)
+		filePath := "uploads/avatars/" + newFileName
+
+		if err := c.SaveUploadedFile(file, filePath); err != nil {
+			c.JSON(http.StatusInternalServerError, response.APIResponse{StatusCode: http.StatusInternalServerError, Error: "No se pudo guardar la imagen."})
+			return
+		}
+		profileImgPath = "/" + filePath
+	}
+
+	dto := CreateUserDTO{
+		Username:   username,
+		Password:   password,
+		ProfileImg: profileImgPath,
 	}
 
 	newUser, err := ctrl.service.CreateUser(dto)

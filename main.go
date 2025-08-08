@@ -1,3 +1,5 @@
+// main.go
+
 package main
 
 import (
@@ -28,6 +30,9 @@ func main() {
 	userController := user.NewUserController(userService)
 
 	router := gin.Default()
+
+	router.Static("/uploads", "./uploads")
+
 	apiV1 := router.Group("/api/v1")
 	{
 		log.Println("Registrando rutas de categoría...")

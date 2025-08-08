@@ -37,6 +37,10 @@ func (s *userService) CreateUser(dto CreateUserDTO) (User, error) {
 		ProfileImg: dto.ProfileImg,
 	}
 
+	if newUser.ProfileImg == "" {
+		newUser.ProfileImg = "/static/avatars/default.png" // Asigna la ruta por defecto
+	}
+
 	return s.repository.Create(newUser)
 }
 
