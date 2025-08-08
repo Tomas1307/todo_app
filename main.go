@@ -1,5 +1,3 @@
-// main.go
-
 package main
 
 import (
@@ -8,43 +6,37 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"todo_app/src/category"
+	"todo_app/src/config/database"
 	"todo_app/src/task"
 	"todo_app/src/user"
 )
 
 func main() {
+	db := database.ConnectDB()
+	database.MigrateTables(db)
+
+	categoryRepo := category.NewCategoryRepository(db)
+	categoryService := category.NewCategoryService(categoryRepo)
+	categoryController := category.NewCategoryController(categoryService)
+
+	taskRepo := task.NewTaskRepository(db)
+	taskService := task.NewTaskService(taskRepo)
+	taskController := task.NewTaskController(taskService)
+
+	userRepo := user.NewUserRepository(db)
+	userService := user.NewUserService(userRepo)
+	userController := user.NewUserController(userService)
+
 	router := gin.Default()
 	apiV1 := router.Group("/api/v1")
 	{
-		// --- Conexión del Módulo de Categorías ---
-
-		// 1. Creas la instancia del servicio
-		categoryService := category.NewCategoryService()
-
-		// 2. Creas la instancia del controlador, "inyectándole" el servicio
-		categoryController := category.NewCategoryController(categoryService)
-
-		// 3. Registras las rutas, pasándole el controlador
+		log.Println("Registrando rutas de categoría...")
 		category.RegisterCategoryRoutes(apiV1, categoryController)
 
-		// (Aquí harías lo mismo para user y task)
-
-		// 1. Creas la instancia del servicio
-		taskService := task.NewTaskService()
-
-		// 2. Creas la instancia del controlador, "inyectándole" el servicio
-		taskController := task.NewTaskController(taskService)
-
-		// 3. Registras las rutas, pasándole el controlador
+		log.Println("Registrando rutas de tarea...")
 		task.RegisterTaskRoutes(apiV1, taskController)
 
-		// 1. Creas la instancia del servicio
-		userService := user.NewUserService()
-
-		// 2. Creas la instancia del controlador, "inyectándole" el servicio
-		userController := user.NewUserController(userService)
-
-		// 3. Registras las rutas, pasándole el controlador
+		log.Println("Registrando rutas de usuario...")
 		user.RegisterUserRoutes(apiV1, userController)
 	}
 
