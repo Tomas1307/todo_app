@@ -1,0 +1,674 @@
+{
+	"info": {
+		"_postman_id": "12345678-1234-1234-1234-123456789abc",
+		"name": "Todo App API",
+		"description": "API completa para la aplicación Todo App con autenticación JWT, gestión de usuarios, categorías y tareas",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "12345678"
+	},
+	"item": [
+		{
+			"name": "👤 Usuarios",
+			"item": [
+				{
+					"name": "Crear Usuario",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 or 201\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+									"});",
+									"",
+									"pm.test(\"Response has user data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('id');",
+									"    pm.expect(jsonData).to.have.property('username');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "username",
+									"value": "alejandro",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "123456",
+									"type": "text"
+								},
+								{
+									"key": "profile_img",
+									"type": "file",
+									"src": [],
+									"disabled": true
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/users/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								""
+							]
+						},
+						"description": "Crear un nuevo usuario en el sistema"
+					},
+					"response": []
+				},
+				{
+					"name": "Login Usuario",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has token\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    pm.expect(jsonData.data).to.have.property('token');",
+									"    // Guardar el token para uso en otras requests",
+									"    pm.environment.set('jwt_token', jsonData.data.token);",
+									"    console.log('Token guardado:', jsonData.data.token);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"alejandro\",\n    \"password\": \"123456\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/users/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"login"
+							]
+						},
+						"description": "Autenticar usuario y obtener token JWT"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints relacionados con la gestión de usuarios"
+		},
+		{
+			"name": "📁 Categorías",
+			"item": [
+				{
+					"name": "Crear Categoría",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 or 201\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+									"});",
+									"",
+									"pm.test(\"Response has category data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('id');",
+									"    pm.expect(jsonData).to.have.property('name');",
+									"    // Guardar el ID de la categoría para usar en tareas",
+									"    pm.environment.set(\"category_id\", jsonData.id);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Trabajo\",\n    \"description\": \"Tareas relacionadas con el trabajo\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/categories/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"categories",
+								""
+							]
+						},
+						"description": "Crear una nueva categoría"
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener Todas las Categorías",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response is an array\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/categories/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"categories",
+								""
+							]
+						},
+						"description": "Obtener lista de todas las categorías"
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar Categoría",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 or 204\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/categories/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"categories",
+								"1"
+							]
+						},
+						"description": "Eliminar una categoría por ID"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints relacionados con la gestión de categorías"
+		},
+		{
+			"name": "✅ Tareas",
+			"item": [
+				{
+					"name": "Crear Tarea",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 or 201\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+									"});",
+									"",
+									"pm.test(\"Response has task data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('id');",
+									"    pm.expect(jsonData).to.have.property('text');",
+									"    pm.expect(jsonData).to.have.property('status');",
+									"    // Guardar el ID de la tarea",
+									"    pm.environment.set(\"task_id\", jsonData.id);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"text\": \"Completar proyecto de API\",\n    \"due_date\": \"2025-08-15T18:00:00Z\",\n    \"category_id\": {{category_id}}\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/tasks/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks",
+								""
+							]
+						},
+						"description": "Crear una nueva tarea"
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener Tareas por Usuario",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response is an array\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/tasks/user",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks",
+								"user"
+							]
+						},
+						"description": "Obtener todas las tareas del usuario autenticado"
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener Tarea por ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has task data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('id');",
+									"    pm.expect(jsonData).to.have.property('text');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/tasks/{{task_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks",
+								"{{task_id}}"
+							]
+						},
+						"description": "Obtener una tarea específica por ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar Tarea",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has updated task data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('id');",
+									"    pm.expect(jsonData).to.have.property('text');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"text\": \"Completar proyecto de API - Actualizado\",\n    \"status\": \"Empezada\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/tasks/{{task_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks",
+								"{{task_id}}"
+							]
+						},
+						"description": "Actualizar una tarea existente"
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar Tarea",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 or 204\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/tasks/{{task_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks",
+								"{{task_id}}"
+							]
+						},
+						"description": "Eliminar una tarea por ID"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints relacionados con la gestión de tareas"
+		},
+		{
+			"name": "🧪 Ejemplos Adicionales",
+			"item": [
+				{
+					"name": "Crear Usuario 2",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "username",
+									"value": "maria",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "password123",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/users/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Crear Categoría Personal",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Personal\",\n    \"description\": \"Tareas personales y del hogar\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/categories/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"categories",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Crear Tarea Sin Fecha",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"text\": \"Aprender Docker y contenedores\",\n    \"category_id\": {{category_id}}\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/tasks/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar Estado a Finalizada",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": \"Finalizada\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/tasks/{{task_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks",
+								"{{task_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "Ejemplos adicionales para probar diferentes escenarios"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Auto-configurar Authorization header si existe jwt_token",
+					"const token = pm.environment.get('jwt_token');",
+					"if (token && !pm.request.headers.has('Authorization')) {",
+					"    pm.request.headers.add({",
+					"        key: 'Authorization',",
+					"        value: `Bearer ${token}`",
+					"    });",
+					"}"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080/api/v1",
+			"type": "string"
+		}
+	]
+}

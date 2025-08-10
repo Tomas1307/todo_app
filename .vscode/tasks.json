@@ -1,0 +1,20 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Start Angular Dev Server",
+			"type": "shell",
+			"command": "ng",
+			"args": [
+				"serve",
+				"--host",
+				"0.0.0.0",
+				"--port",
+				"4200"
+			],
+			"group": "serve",
+			"isBackground": true,
+			"problemMatcher": []
+		}
+	]
+}

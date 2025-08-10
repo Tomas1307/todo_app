@@ -1,0 +1,33 @@
+nohup: ignoring input
+2025/08/09 15:43:35 Conexión a la base de datos establecida exitosamente.
+2025/08/09 15:43:35 Ejecutando migraciones...
+2025/08/09 15:43:35 Migraciones completadas.
+[GIN-debug] [WARNING] Creating an Engine instance with the Logger and Recovery middleware already attached.
+
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /uploads/*filepath        --> github.com/gin-gonic/gin.(*RouterGroup).createStaticHandler.func1 (4 handlers)
+[GIN-debug] HEAD   /uploads/*filepath        --> github.com/gin-gonic/gin.(*RouterGroup).createStaticHandler.func1 (4 handlers)
+[GIN-debug] POST   /login                    --> todo_app/src/user.(*UserController).Login-fm (4 handlers)
+[GIN-debug] POST   /users                    --> todo_app/src/user.(*UserController).CreateUser-fm (4 handlers)
+2025/08/09 15:43:35 Registrando rutas de categoría...
+[GIN-debug] POST   /api/v1/categories/       --> todo_app/src/category.(*CategoryController).CreateCategory-fm (5 handlers)
+[GIN-debug] GET    /api/v1/categories/       --> todo_app/src/category.(*CategoryController).GetCategories-fm (5 handlers)
+[GIN-debug] DELETE /api/v1/categories/:id    --> todo_app/src/category.(*CategoryController).DeleteCategory-fm (5 handlers)
+2025/08/09 15:43:35 Registrando rutas de tarea...
+[GIN-debug] POST   /api/v1/tasks/            --> todo_app/src/task.(*TaskController).CreateTask-fm (5 handlers)
+[GIN-debug] GET    /api/v1/tasks/user        --> todo_app/src/task.(*TaskController).GetTasksByUser-fm (5 handlers)
+[GIN-debug] GET    /api/v1/tasks/:id         --> todo_app/src/task.(*TaskController).GetTaskByID-fm (5 handlers)
+[GIN-debug] PUT    /api/v1/tasks/:id         --> todo_app/src/task.(*TaskController).UpdateTask-fm (5 handlers)
+[GIN-debug] DELETE /api/v1/tasks/:id         --> todo_app/src/task.(*TaskController).DeleteTask-fm (5 handlers)
+2025/08/09 15:43:35 Registrando rutas de usuario...
+[GIN-debug] POST   /api/v1/users/            --> todo_app/src/user.(*UserController).CreateUser-fm (4 handlers)
+[GIN-debug] POST   /api/v1/users/login       --> todo_app/src/user.(*UserController).Login-fm (4 handlers)
+2025/08/09 15:43:35 Servidor iniciado en http://localhost:8080
+[GIN-debug] [WARNING] You trusted all proxies, this is NOT safe. We recommend you to set a value.
+Please check https://pkg.go.dev/github.com/gin-gonic/gin#readme-don-t-trust-all-proxies for details.
+[GIN-debug] Listening and serving HTTP on :8080
+[GIN] 2025/08/09 - 15:44:12 | 404 |       1.032µs |             ::1 | GET      "/health"
+[GIN] 2025/08/09 - 15:44:30 | 404 |         881ns |             ::1 | GET      "/api/health"

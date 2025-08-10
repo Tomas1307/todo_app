@@ -2,7 +2,9 @@ package main
 
 import (
 	"log"
+	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 
 	"todo_app/src/category"
@@ -29,8 +31,23 @@ func main() {
 
 	router := gin.Default()
 
+	// Configuración CORS
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:4200"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
+
 	router.Static("/uploads", "./uploads")
 
+	// Rutas principales (sin /api/v1)
+	router.POST("/login", userController.Login)
+	router.POST("/users", userController.CreateUser)
+
+	// Grupo de rutas protegidas
 	apiV1 := router.Group("/api/v1")
 	{
 		log.Println("Registrando rutas de categoría...")

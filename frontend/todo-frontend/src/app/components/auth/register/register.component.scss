@@ -1,0 +1,265 @@
+.register-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.register-card {
+  max-width: 480px;
+  width: 100%;
+  margin: 0 auto;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+
+  mat-card-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 24px;
+    text-align: center;
+    
+    mat-card-title {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    mat-card-subtitle {
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 14px;
+    }
+  }
+
+  mat-card-content {
+    padding: 24px;
+  }
+}
+
+.register-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+// Avatar Upload Section
+.avatar-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 24px;
+  gap: 16px;
+}
+
+.avatar-preview {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  
+  .avatar-image {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #667eea;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  
+  .remove-image-btn {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+  }
+}
+
+.avatar-placeholder {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 2px dashed #ccc;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  background: #f9f9f9;
+  
+  mat-icon {
+    font-size: 36px;
+    width: 36px;
+    height: 36px;
+    margin-bottom: 8px;
+    color: #999;
+  }
+  
+  p {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 500;
+  }
+}
+
+.upload-btn {
+  min-width: 140px;
+  
+  mat-icon {
+    margin-right: 8px;
+  }
+}
+
+// Form Layout
+.full-width {
+  width: 100%;
+}
+
+// Form Fields Styling
+mat-form-field {
+  &.mat-form-field-appearance-outline {
+    .mat-form-field-outline {
+      color: rgba(0, 0, 0, 0.12);
+    }
+    
+    &.mat-focused .mat-form-field-outline-thick {
+      color: #667eea;
+    }
+    
+    .mat-form-field-label {
+      color: rgba(0, 0, 0, 0.6);
+    }
+    
+    &.mat-focused .mat-form-field-label {
+      color: #667eea;
+    }
+  }
+  
+  .mat-input-element {
+    font-size: 14px;
+  }
+  
+  mat-icon {
+    color: rgba(0, 0, 0, 0.54);
+  }
+}
+
+// Form Actions
+.form-actions {
+  margin-top: 24px;
+}
+
+.submit-btn {
+  height: 48px;
+  font-size: 16px;
+  font-weight: 500;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  
+  &:hover:not([disabled]) {
+    box-shadow: 0 6px 16px rgba(102, 126, 234, 0.5);
+    transform: translateY(-1px);
+  }
+  
+  &[disabled] {
+    background: #ccc;
+    color: rgba(0, 0, 0, 0.38);
+    box-shadow: none;
+    cursor: not-allowed;
+  }
+  
+  .button-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  mat-spinner {
+    margin-right: 8px;
+  }
+}
+
+// Card Actions
+mat-card-actions {
+  padding: 16px 24px;
+  background: #f8f9fa;
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+  
+  p {
+    margin: 0;
+    color: rgba(0, 0, 0, 0.7);
+    font-size: 14px;
+  }
+  
+  button {
+    font-weight: 500;
+    text-transform: uppercase;
+  }
+}
+
+// Error State Styling
+mat-error {
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+// Responsive Design
+@media (max-width: 600px) {
+  .register-container {
+    padding: 16px;
+  }
+  
+  .register-card {
+    max-width: 100%;
+    
+    mat-card-header {
+      padding: 20px 16px;
+    }
+    
+    mat-card-content {
+      padding: 20px 16px;
+    }
+  }
+  
+  .avatar-preview,
+  .avatar-placeholder {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .avatar-preview .avatar-image {
+    border-width: 3px;
+  }
+}
+
+// Animation for smooth transitions
+.register-card {
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Loading state
+.submit-btn mat-spinner ::ng-deep circle {
+  stroke: white;
+}
