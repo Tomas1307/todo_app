@@ -1,0 +1,29 @@
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: todo_db_container
+    environment:
+      POSTGRES_USER: ${DB_USER}       
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "${DB_PORT}:5432"            
+    volumes:
+      - postgres_data:/var/lib/postgresql/data 
+
+  backend:
+    container_name: todo_app_container
+    build: .                          
+    ports:
+      - "8080:8080"    
+    restart: on-failure               
+    env_file:
+      - .env                          
+    depends_on:
+      - db                    
+    volumes:
+      - ./uploads:/app/uploads      
+
+volumes:
+  postgres_data:
