@@ -1,7 +1,0 @@
-#ESTO NUNCA LO PONDRIAMOS EN PRODUCCION POR RAZONES OBVIAS
-DB_HOST=db
-DB_PORT=5432
-DB_USER=todo_user
-DB_PASSWORD=admin1234
-DB_NAME=todo_db
-JWT_SECRET=este_es_un_secreto_muy_seguro_y_largo_321
