@@ -14,16 +14,26 @@ services:
 
   backend:
     container_name: todo_app_container
-    build: .                          
+    build: .  /backend                        
     ports:
       - "8080:8080"    
     restart: on-failure               
     env_file:
-      - .env                          
+      - ./backend/.env                         
     depends_on:
       - db                    
     volumes:
-      - ./uploads:/app/uploads      
+      - ./backend/uploads:/app/uploads  
+
+  #frontend:
+  #  container_name: todo_app_frontend
+  #  build:
+  #    context: ./frontend  # Apunta a la carpeta del frontend
+  #  ports:
+  #    # Expone el puerto 3000 de tu PC y lo mapea al puerto 80 de Nginx
+  #    - "3000:80"
+  #  depends_on:
+  #    - backend
 
 volumes:
   postgres_data:
