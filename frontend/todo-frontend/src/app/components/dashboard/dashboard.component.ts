@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule, RouterOutlet } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -7,10 +7,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
 import { MatBadgeModule } from '@angular/material/badge';
-import { MatMenuModule } from '@angular/material/menu';
+import { MatMenuModule, MatMenuTrigger } from '@angular/material/menu';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { TaskService } from '../../services/task.service';
@@ -25,7 +26,6 @@ import { Category } from '../../models/category.model';
     CommonModule,
     RouterModule,
     RouterOutlet,
-    ReactiveFormsModule,
     MatToolbarModule,
     MatButtonModule,
     MatIconModule,
@@ -35,7 +35,9 @@ import { Category } from '../../models/category.model';
     MatMenuModule,
     MatDialogModule,
     MatFormFieldModule,
-    MatInputModule
+    MatInputModule,
+    MatSnackBarModule,
+    ReactiveFormsModule
   ],
   template: `
     <div class="dashboard-container">
@@ -59,14 +61,6 @@ import { Category } from '../../models/category.model';
             </div>
           </div>
 
-          <!-- Quick Actions -->
-          <div class="quick-actions">
-            <button mat-button class="add-task-btn" (click)="quickAddTask()">
-              <mat-icon>add</mat-icon>
-              <span>Agregar tarea</span>
-            </button>
-          </div>
-
           <!-- Navigation Menu -->
           <div class="nav-menu">
             <!-- Tasks Section -->
@@ -83,15 +77,6 @@ import { Category } from '../../models/category.model';
               </a>
 
               <a mat-list-item 
-                 routerLink="/dashboard/upcoming" 
-                 routerLinkActive="active-link"
-                 class="nav-item">
-                <mat-icon matListIcon class="nav-icon upcoming-icon">upcoming</mat-icon>
-                <span class="nav-text">Próximo</span>
-                <span class="task-badge" *ngIf="upcomingTasksCount > 0">{{upcomingTasksCount}}</span>
-              </a>
-
-              <a mat-list-item 
                  routerLink="/dashboard/calendar" 
                  routerLinkActive="active-link"
                  class="nav-item">
@@ -104,24 +89,31 @@ import { Category } from '../../models/category.model';
             <div class="menu-section">
               <div class="section-header">
                 <div class="section-title">CATEGORÍAS</div>
-                <button mat-icon-button class="add-category-btn" (click)="addCategory()" [matMenuTriggerFor]="categoryMenu">
+                <button mat-icon-button class="add-category-btn" (click)="addCategory()" [matMenuTriggerFor]="categoryMenu" #menuTrigger="matMenuTrigger">
                   <mat-icon>add</mat-icon>
                 </button>
               </div>
 
               <div class="categories-list" *ngIf="categories.length > 0">
-                <a *ngFor="let category of categories" 
-                   mat-list-item
-                   [routerLink]="'/dashboard/category/' + category.id"
-                   routerLinkActive="active-link"
-                   class="nav-item category-item">
-                  
-                  <div class="category-color" [style.background-color]="category.color"></div>
-                  <span class="nav-text">{{category.name}}</span>
-                  <span class="task-badge" *ngIf="getCategoryTaskCount(category.id) > 0">
-                    {{getCategoryTaskCount(category.id)}}
-                  </span>
-                </a>
+                <div *ngFor="let category of categories" class="category-item-wrapper">
+                  <a mat-list-item
+                     [routerLink]="'/dashboard/category/' + category.id"
+                     routerLinkActive="active-link"
+                     class="nav-item category-item">
+                    
+                    <div class="category-color" [style.background-color]="category.color"></div>
+                    <span class="nav-text">{{category.name}}</span>
+                    <span class="task-badge" *ngIf="getCategoryTaskCount(category.id) > 0">
+                      {{getCategoryTaskCount(category.id)}}
+                    </span>
+                  </a>
+                  <button mat-icon-button 
+                          class="delete-category-btn" 
+                          (click)="confirmDeleteCategory(category)"
+                          [attr.title]="'Eliminar categoría: ' + category.name">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </div>
               </div>
 
               <div class="no-categories" *ngIf="categories.length === 0">
@@ -156,32 +148,35 @@ import { Category } from '../../models/category.model';
         <div class="category-form" (click)="$event.stopPropagation()">
           <h3>Nueva Categoría</h3>
           <form [formGroup]="categoryForm" (ngSubmit)="createCategory()">
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Nombre</mat-label>
-              <input matInput formControlName="name" placeholder="Ej: Trabajo, Personal...">
-            </mat-form-field>
-
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Descripción</mat-label>
-              <input matInput formControlName="description" placeholder="Descripción opcional">
-            </mat-form-field>
-
+            
+            <!-- Color Picker at the top -->
             <div class="color-picker">
-              <label>Color:</label>
+              <label>Selecciona un color:</label>
               <div class="color-options">
                 <div *ngFor="let color of colorOptions" 
                      class="color-option" 
                      [class.selected]="categoryForm.get('color')?.value === color"
                      [style.background-color]="color"
-                     (click)="selectColor(color)">
+                     (click)="selectColor(color)"
+                     [attr.title]="color">
                 </div>
               </div>
             </div>
 
+            <mat-form-field appearance="outline" class="full-width compact-field">
+              <mat-label>Nombre</mat-label>
+              <input matInput formControlName="name" placeholder="Ej: Trabajo, Personal...">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width compact-field">
+              <mat-label>Descripción (opcional)</mat-label>
+              <input matInput formControlName="description" placeholder="Breve descripción">
+            </mat-form-field>
+
             <div class="form-actions">
-              <button mat-button type="button" [mat-menu-trigger-for]="null">Cancelar</button>
+              <button mat-button type="button" (click)="cancelCategoryCreation()">Cancelar</button>
               <button mat-raised-button color="primary" type="submit" [disabled]="categoryForm.invalid">
-                Crear
+                Crear Categoría
               </button>
             </div>
           </form>
@@ -205,6 +200,7 @@ import { Category } from '../../models/category.model';
       border-right: 1px solid #e0e0e0;
       display: flex;
       flex-direction: column;
+      height: 100vh;
     }
 
     /* User Section */
@@ -248,34 +244,28 @@ import { Category } from '../../models/category.model';
       color: #5f6368;
     }
 
-    /* Quick Actions */
-    .quick-actions {
-      padding: 12px;
-      border-bottom: 1px solid #e0e0e0;
-    }
-
-    .add-task-btn {
-      width: 100%;
-      justify-content: flex-start;
-      padding: 8px 16px;
-      border-radius: 8px;
-      color: #4caf50;
-      font-weight: 500;
-    }
-
-    .add-task-btn mat-icon {
-      margin-right: 8px;
-    }
-
     /* Navigation Menu */
     .nav-menu {
       flex: 1;
       padding: 12px 0;
       overflow-y: auto;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
     }
 
     .menu-section {
-      margin-bottom: 24px;
+      margin-bottom: 16px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .menu-section:last-of-type {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 0;
     }
 
     .section-header {
@@ -296,15 +286,27 @@ import { Category } from '../../models/category.model';
     }
 
     .add-category-btn {
-      width: 24px;
-      height: 24px;
-      line-height: 24px;
+      width: 32px;
+      height: 32px;
+      line-height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: all 0.2s ease;
+    }
+
+    .add-category-btn:hover {
+      background-color: rgba(0, 0, 0, 0.04);
     }
 
     .add-category-btn mat-icon {
-      font-size: 16px;
-      width: 16px;
-      height: 16px;
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     /* Navigation Items */
@@ -340,10 +342,6 @@ import { Category } from '../../models/category.model';
 
     .today-icon {
       color: #4caf50;
-    }
-
-    .upcoming-icon {
-      color: #9c27b0;
     }
 
     .calendar-icon {
@@ -384,8 +382,75 @@ import { Category } from '../../models/category.model';
     }
 
     .categories-list {
-      max-height: 200px;
       overflow-y: auto;
+      overflow-x: hidden;
+      padding-right: 4px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .category-item-wrapper {
+      display: flex;
+      align-items: center;
+      margin: 2px 4px 2px 8px;
+      border-radius: 8px;
+      transition: background-color 0.2s ease;
+      position: relative;
+      max-width: 100%;
+      overflow: hidden;
+    }
+
+    .category-item-wrapper:hover {
+      background-color: rgba(0, 0, 0, 0.04);
+    }
+
+    .category-item-wrapper:hover .delete-category-btn {
+      opacity: 1;
+    }
+
+    .category-item-wrapper .category-item {
+      flex: 1;
+      margin: 0 !important;
+      border-radius: 8px !important;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .category-item-wrapper .category-item .nav-text {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .delete-category-btn {
+      width: 24px;
+      height: 24px;
+      min-width: 24px;
+      opacity: 0;
+      transition: all 0.2s ease;
+      color: #f44336;
+      margin-left: 2px;
+      flex-shrink: 0;
+      border-radius: 50%;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      padding: 0 !important;
+    }
+
+    .delete-category-btn:hover {
+      background-color: rgba(244, 67, 54, 0.1);
+      color: #d32f2f;
+    }
+
+    .delete-category-btn mat-icon {
+      font-size: 14px !important;
+      width: 14px !important;
+      height: 14px !important;
+      line-height: 14px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
     }
 
     .no-categories {
@@ -413,14 +478,26 @@ import { Category } from '../../models/category.model';
 
     /* Bottom Section */
     .sidebar-bottom {
-      padding: 12px 8px;
+      padding: 16px 8px 16px 8px;
       border-top: 1px solid #e0e0e0;
+      flex-shrink: 0;
+      background: #fafafa;
+      position: sticky;
+      bottom: 0;
     }
 
     .logout-btn {
       width: 100%;
       color: #d32f2f !important;
       text-align: left !important;
+      padding: 12px 16px !important;
+      border-radius: 8px !important;
+      margin: 0 !important;
+      transition: background-color 0.2s ease;
+    }
+
+    .logout-btn:hover {
+      background-color: rgba(211, 47, 47, 0.08) !important;
     }
 
     .logout-btn mat-icon {
@@ -440,59 +517,122 @@ import { Category } from '../../models/category.model';
     /* Category Form */
     .category-form {
       padding: 16px;
-      width: 300px;
+      width: 280px;
+      background: white;
+      border-radius: 8px;
+      max-height: 400px;
+      max-width: 280px;
+      overflow: hidden !important;
+      box-sizing: border-box;
+    }
+
+    /* Force no scroll on mat-menu */
+    ::ng-deep .mat-mdc-menu-panel {
+      overflow: hidden !important;
+      max-width: 320px !important;
+    }
+
+    ::ng-deep .mat-mdc-menu-content {
+      overflow: hidden !important;
+      padding: 0 !important;
     }
 
     .category-form h3 {
-      margin: 0 0 16px 0;
+      margin: 0 0 12px 0;
       font-size: 16px;
+      font-weight: 500;
       color: #202124;
+      text-align: center;
     }
 
     .full-width {
       width: 100%;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
+      max-width: 248px;
+      overflow: hidden;
+    }
+
+    .compact-field {
+      font-size: 14px;
+    }
+
+    .compact-field .mat-mdc-form-field-infix {
+      min-height: 44px;
+    }
+
+    ::ng-deep .category-form .mat-mdc-form-field {
+      width: 100% !important;
+      max-width: 248px !important;
     }
 
     .color-picker {
       margin-bottom: 16px;
+      text-align: center;
     }
 
     .color-picker label {
       display: block;
-      font-size: 12px;
-      color: #5f6368;
+      font-size: 13px;
+      font-weight: 500;
+      color: #202124;
       margin-bottom: 8px;
     }
 
     .color-options {
       display: flex;
-      gap: 8px;
+      gap: 4px;
+      justify-content: center;
       flex-wrap: wrap;
+      max-width: 240px;
+      margin: 0 auto;
+      overflow: hidden;
     }
 
     .color-option {
-      width: 24px;
-      height: 24px;
+      width: 22px;
+      height: 22px;
       border-radius: 50%;
       cursor: pointer;
       border: 2px solid transparent;
       transition: all 0.2s ease;
+      position: relative;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+      flex-shrink: 0;
     }
 
     .color-option:hover {
       transform: scale(1.1);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     }
 
     .color-option.selected {
-      border-color: #4caf50;
-      transform: scale(1.1);
+      border-color: #1976d2;
+      transform: scale(1.15);
+      box-shadow: 0 2px 6px rgba(25, 118, 210, 0.4);
+    }
+
+    .color-option.selected::after {
+      content: '✓';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: white;
+      font-size: 12px;
+      font-weight: bold;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
     }
 
     .form-actions {
       display: flex;
       gap: 8px;
       justify-content: flex-end;
+      margin-top: 12px;
+    }
+
+    .form-actions button {
+      min-width: 70px;
+      font-size: 13px;
     }
 
     /* Responsive */
@@ -501,24 +641,39 @@ import { Category } from '../../models/category.model';
         width: 260px;
       }
     }
+
+    /* Snackbar Styles */
+    ::ng-deep .success-snackbar {
+      background-color: #4caf50 !important;
+      color: white !important;
+    }
+
+    ::ng-deep .error-snackbar {
+      background-color: #f44336 !important;
+      color: white !important;
+    }
+
+    ::ng-deep .mat-mdc-snack-bar-container .mdc-snackbar__surface {
+      border-radius: 8px !important;
+    }
   `]
 })
 export class DashboardComponent implements OnInit {
+  @ViewChild('menuTrigger') menuTrigger!: MatMenuTrigger;
+  
   currentUser: any = null;
   categories: Category[] = [];
   allTasks: Task[] = [];
   
   // Task counts for badges
   todayTasksCount = 0;
-  upcomingTasksCount = 0;
   
-  // Category form
+    // Category form
   categoryForm: FormGroup;
   colorOptions = [
     '#f44336', '#e91e63', '#9c27b0', '#673ab7',
-    '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4',
-    '#009688', '#4caf50', '#8bc34a', '#cddc39',
-    '#ffeb3b', '#ffc107', '#ff9800', '#ff5722'
+    '#3f51b5', '#2196f3', '#00bcd4', '#009688', 
+    '#4caf50', '#8bc34a', '#ffc107', '#ff5722'
   ];
   
   constructor(
@@ -527,17 +682,33 @@ export class DashboardComponent implements OnInit {
     private categoryService: CategoryService,
     private router: Router,
     private fb: FormBuilder,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private snackBar: MatSnackBar
   ) {
     this.categoryForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(2)]],
       description: [''],
-      color: ['#4caf50', Validators.required]
+      color: [this.colorOptions[0], Validators.required]
     });
   }
 
   ngOnInit() {
+    // Check authentication first
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.log('No authentication token found, redirecting to login');
+      this.router.navigate(['/login']);
+      return;
+    }
+
     this.currentUser = this.authService.getCurrentUser();
+    if (!this.currentUser) {
+      console.log('No current user found, redirecting to login');
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    // Load data only if authenticated
     this.loadCategories();
     this.loadTasks();
     
@@ -552,17 +723,14 @@ export class DashboardComponent implements OnInit {
       next: (response: any) => {
         if (response.status_code === 200) {
           this.categories = response.data;
-          
-          // Create sample categories if none exist
-          if (this.categories.length === 0) {
-            this.createSampleCategories();
-          }
         }
       },
       error: (error) => {
         console.error('Error loading categories:', error);
-        // If categories fail to load, try to create sample ones
-        this.createSampleCategories();
+        // If unauthorized, redirect to login
+        if (error.status === 401) {
+          this.router.navigate(['/login']);
+        }
       }
     });
   }
@@ -577,128 +745,34 @@ export class DashboardComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error loading tasks:', error);
+        // If unauthorized, redirect to login
+        if (error.status === 401) {
+          this.router.navigate(['/login']);
+        } else {
+          // Reset tasks on other errors
+          this.allTasks = [];
+          this.calculateTaskCounts();
+        }
       }
     });
   }
 
   calculateTaskCounts() {
     const today = new Date().toISOString().split('T')[0];
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const tomorrowStr = tomorrow.toISOString().split('T')[0];
     
     // Count today tasks
     this.todayTasksCount = this.allTasks.filter(task => 
       task.dueDate && task.dueDate.startsWith(today)
     ).length;
-    
-    // Count upcoming tasks (today + this week)
-    const endOfWeek = new Date();
-    endOfWeek.setDate(endOfWeek.getDate() + 7);
-    
-    this.upcomingTasksCount = this.allTasks.filter(task => {
-      if (!task.dueDate) return false;
-      const taskDate = new Date(task.dueDate);
-      return taskDate <= endOfWeek;
-    }).length;
   }
 
   getCategoryTaskCount(categoryId: number): number {
     return this.allTasks.filter(task => task.categoryId === categoryId).length;
   }
 
-  createSampleCategories() {
-    const sampleCategories = [
-      { name: 'Trabajo', color: '#2196f3', description: 'Tareas relacionadas con el trabajo' },
-      { name: 'Personal', color: '#4caf50', description: 'Tareas personales' },
-      { name: 'Estudios', color: '#ff9800', description: 'Aprendizaje y educación' },
-      { name: 'Salud', color: '#f44336', description: 'Salud y ejercicio' }
-    ];
-
-    let categoriesCreated = 0;
-    sampleCategories.forEach(category => {
-      this.categoryService.createCategory(category).subscribe({
-        next: (response: any) => {
-          if (response.status_code === 201) {
-            console.log('Sample category created:', category.name);
-            categoriesCreated++;
-            if (categoriesCreated === sampleCategories.length) {
-              this.loadCategories();
-              setTimeout(() => {
-                this.createSampleTasks();
-              }, 1000);
-            }
-          }
-        },
-        error: (error) => {
-          console.log('Error creating sample category:', error);
-          categoriesCreated++;
-          if (categoriesCreated === sampleCategories.length) {
-            this.loadCategories();
-          }
-        }
-      });
-    });
-  }
-
-  createSampleTasks() {
-    if (this.categories.length > 0) {
-      const sampleTasks = [
-        {
-          text: 'Caso de Estudio - Arquitectura de Infraestructura',
-          categoryId: this.categories.find(c => c.name === 'Estudios')?.id || this.categories[0].id,
-          status: TaskStatus.SIN_EMPEZAR,
-          dueDate: '2025-08-10'
-        },
-        {
-          text: 'Responder emails importantes',
-          categoryId: this.categories.find(c => c.name === 'Trabajo')?.id || this.categories[0].id,
-          status: TaskStatus.SIN_EMPEZAR
-        },
-        {
-          text: 'Enviar Propuesta de Trabajo',
-          categoryId: this.categories.find(c => c.name === 'Trabajo')?.id || this.categories[0].id,
-          status: TaskStatus.SIN_EMPEZAR,
-          dueDate: '2025-08-11'
-        },
-        {
-          text: 'Ejercicio matutino',
-          categoryId: this.categories.find(c => c.name === 'Salud')?.id || this.categories[0].id,
-          status: TaskStatus.SIN_EMPEZAR,
-          dueDate: '2025-08-10'
-        }
-      ];
-
-      // Create sample tasks only if we don't have any tasks yet
-      setTimeout(() => {
-        if (this.allTasks.length === 0) {
-          sampleTasks.forEach(task => {
-            this.taskService.createTask(task).subscribe({
-              next: (response: any) => {
-                if (response.status_code === 201) {
-                  console.log('Sample task created:', task.text);
-                }
-              },
-              error: (error) => {
-                console.log('Error creating sample task:', error);
-              }
-            });
-          });
-          
-          // Reload tasks after creating samples
-          setTimeout(() => {
-            this.loadTasks();
-          }, 2000);
-        }
-      }, 500);
-    }
-  }
-
-  quickAddTask() {
-    // Navigate to today view and trigger add task
-    this.router.navigate(['/dashboard/today']);
-    // TODO: Implement a service to communicate with TodayComponent to show add task form
-  }
+  // Removed automatic sample data creation methods
+  // createSampleCategories() and createSampleTasks() have been disabled
+  // to prevent automatic data creation on dashboard load
 
   addCategory() {
     // This will be handled by the mat-menu
@@ -708,18 +782,94 @@ export class DashboardComponent implements OnInit {
     this.categoryForm.patchValue({ color });
   }
 
+  cancelCategoryCreation() {
+    this.categoryForm.reset();
+    this.categoryForm.patchValue({ color: this.colorOptions[0] });
+    this.menuTrigger.closeMenu();
+  }
+
+  confirmDeleteCategory(category: Category) {
+    const confirmDelete = confirm(`¿Estás seguro de que quieres eliminar la categoría "${category.name}"?`);
+    if (confirmDelete) {
+      this.deleteCategory(category.id);
+    }
+  }
+
+  deleteCategory(categoryId: number) {
+    this.categoryService.deleteCategory(categoryId).subscribe({
+      next: (response: any) => {
+        if (response.status_code === 200 || response.status_code === 204) {
+          this.snackBar.open(
+            'Categoría eliminada exitosamente', 
+            'Cerrar', 
+            {
+              duration: 3000,
+              horizontalPosition: 'center',
+              verticalPosition: 'top',
+              panelClass: ['success-snackbar']
+            }
+          );
+          this.loadCategories();
+          this.loadTasks(); // Recargar tareas por si había tareas en esa categoría
+        }
+      },
+      error: (error) => {
+        console.error('Error deleting category:', error);
+        this.snackBar.open(
+          'Error al eliminar la categoría. Inténtalo de nuevo.', 
+          'Cerrar', 
+          {
+            duration: 4000,
+            horizontalPosition: 'center',
+            verticalPosition: 'top',
+            panelClass: ['error-snackbar']
+          }
+        );
+      }
+    });
+  }
+
   createCategory() {
     if (this.categoryForm.valid) {
-      this.categoryService.createCategory(this.categoryForm.value).subscribe({
+      const categoryData = this.categoryForm.value;
+      this.categoryService.createCategory(categoryData).subscribe({
         next: (response: any) => {
           if (response.status_code === 201) {
+            // Cerrar el menú
+            this.menuTrigger.closeMenu();
+            
+            // Mostrar confirmación
+            this.snackBar.open(
+              `Categoría "${categoryData.name}" creada exitosamente`, 
+              'Cerrar', 
+              {
+                duration: 4000,
+                horizontalPosition: 'center',
+                verticalPosition: 'top',
+                panelClass: ['success-snackbar']
+              }
+            );
+            
+            // Recargar categorías
             this.loadCategories();
+            
+            // Resetear formulario
             this.categoryForm.reset();
-            this.categoryForm.patchValue({ color: '#4caf50' });
+            this.categoryForm.patchValue({ color: this.colorOptions[0] });
           }
         },
         error: (error) => {
           console.error('Error creating category:', error);
+          this.snackBar.open(
+            'Error al crear la categoría. Inténtalo de nuevo.', 
+            'Cerrar', 
+            {
+              duration: 4000,
+              horizontalPosition: 'center',
+              verticalPosition: 'top',
+              panelClass: ['error-snackbar']
+            }
+          );
         }
       });
     }

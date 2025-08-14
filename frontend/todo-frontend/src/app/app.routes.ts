@@ -30,10 +30,6 @@ export const routes: Routes = [
         loadComponent: () => import('./components/today/today.component').then(c => c.TodayComponent)
       },
       {
-        path: 'upcoming',
-        loadComponent: () => import('./components/upcoming/upcoming.component').then(c => c.UpcomingComponent)
-      },
-      {
         path: 'calendar',
         loadComponent: () => import('./components/calendar/calendar.component').then(c => c.CalendarComponent)
       },

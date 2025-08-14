@@ -9,7 +9,7 @@ import { AuthService } from './auth.service';
   providedIn: 'root'
 })
 export class CategoryService {
-  private apiUrl = 'http://localhost:8080/api/v1/categories/';
+  private apiUrl = 'http://localhost:8080/api/v1/categories';
   
   // Array de colores predefinidos para las categorías (mismo que TaskService)
   private categoryColors = [
@@ -42,7 +42,7 @@ export class CategoryService {
   }
 
   getCategories(): Observable<CategoryResponse> {
-    return this.http.get<CategoryResponse>(this.apiUrl, {
+    return this.http.get<CategoryResponse>(`${this.apiUrl}/`, {
       headers: this.authService.getAuthHeaders()
     }).pipe(
       map((response: any) => {
@@ -73,7 +73,7 @@ export class CategoryService {
   }
 
   createCategory(category: CreateCategoryRequest): Observable<CategoryResponse> {
-    return this.http.post<CategoryResponse>(this.apiUrl, category, {
+    return this.http.post<CategoryResponse>(`${this.apiUrl}/`, category, {
       headers: this.authService.getAuthHeaders()
     }).pipe(
       map((response: any) => {

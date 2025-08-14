@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -46,48 +47,76 @@ import { Category } from '../../models/category.model';
 
       <!-- Add Task Form -->
       <div class="add-task-form" *ngIf="showAddTask">
+        <div class="form-header">
+          <h3>Nueva Tarea</h3>
+          <p class="form-subtitle">Agrega una nueva tarea para hoy</p>
+        </div>
+        
         <form [formGroup]="taskForm" (ngSubmit)="addTask()">
-          <mat-form-field appearance="outline" class="full-width">
+          <mat-form-field appearance="outline" class="full-width compact-field">
             <mat-label>Nombre de la tarea</mat-label>
-            <input matInput formControlName="text" placeholder="Ej: Completar informe...">
+            <input matInput formControlName="text" placeholder="Ej: Completar informe del proyecto...">
+            <mat-icon matSuffix>assignment</mat-icon>
             <mat-error *ngIf="taskForm.get('text')?.hasError('required')">
               El nombre de la tarea es requerido
             </mat-error>
           </mat-form-field>
 
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Categoría</mat-label>
-            <mat-select formControlName="categoryId">
-              <mat-option *ngFor="let category of categories" [value]="category.id">
-                <div class="category-option">
-                  <span class="category-dot" [style.background-color]="category.color"></span>
-                  <span class="category-name">{{category.name}}</span>
-                  <span class="category-color-preview" [style.background-color]="category.color"></span>
-                </div>
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="half-width compact-field">
+              <mat-label>Categoría</mat-label>
+              <mat-select formControlName="categoryId">
+                <mat-option *ngFor="let category of categories" [value]="category.id">
+                  <div class="category-option">
+                    <span class="category-dot" [style.background-color]="category.color"></span>
+                    <span class="category-name">{{category.name}}</span>
+                  </div>
+                </mat-option>
+              </mat-select>
+              <mat-icon matSuffix>folder</mat-icon>
+            </mat-form-field>
 
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Estado</mat-label>
-            <mat-select formControlName="status">
-              <mat-option [value]="TaskStatus.SIN_EMPEZAR">Sin Empezar</mat-option>
-              <mat-option [value]="TaskStatus.EMPEZADA">Empezada</mat-option>
-              <mat-option [value]="TaskStatus.FINALIZADA">Finalizada</mat-option>
-            </mat-select>
-          </mat-form-field>
+            <mat-form-field appearance="outline" class="half-width compact-field">
+              <mat-label>Estado</mat-label>
+              <mat-select formControlName="status">
+                <mat-option [value]="TaskStatus.SIN_EMPEZAR">
+                  <div class="status-option">
+                    <mat-icon class="status-icon pending">schedule</mat-icon>
+                    Sin Empezar
+                  </div>
+                </mat-option>
+                <mat-option [value]="TaskStatus.EMPEZADA">
+                  <div class="status-option">
+                    <mat-icon class="status-icon in-progress">play_circle</mat-icon>
+                    En Progreso
+                  </div>
+                </mat-option>
+                <mat-option [value]="TaskStatus.FINALIZADA">
+                  <div class="status-option">
+                    <mat-icon class="status-icon completed">check_circle</mat-icon>
+                    Finalizada
+                  </div>
+                </mat-option>
+              </mat-select>
+              <mat-icon matSuffix>flag</mat-icon>
+            </mat-form-field>
+          </div>
 
-          <mat-form-field appearance="outline" class="full-width">
+          <mat-form-field appearance="outline" class="full-width compact-field">
             <mat-label>Fecha de vencimiento</mat-label>
-            <input matInput [matDatepicker]="picker" formControlName="dueDate">
+            <input matInput [matDatepicker]="picker" formControlName="dueDate" placeholder="Selecciona una fecha">
             <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
             <mat-datepicker #picker></mat-datepicker>
           </mat-form-field>
 
           <div class="form-actions">
-            <button mat-button type="button" (click)="cancelAddTask()">Cancelar</button>
-            <button mat-raised-button color="primary" type="submit" [disabled]="taskForm.invalid">
-              Agregar tarea
+            <button mat-button type="button" (click)="cancelAddTask()" class="cancel-btn">
+              <mat-icon>close</mat-icon>
+              Cancelar
+            </button>
+            <button mat-raised-button color="primary" type="submit" [disabled]="taskForm.invalid" class="submit-btn">
+              <mat-icon>add</mat-icon>
+              Crear Tarea
             </button>
           </div>
         </form>
@@ -200,47 +229,215 @@ import { Category } from '../../models/category.model';
 
     .add-task-form {
       background: white;
-      padding: 20px;
-      border-radius: 8px;
-      border: 1px solid #dadce0;
+      padding: 24px;
+      border-radius: 12px;
+      border: 1px solid #e0e0e0;
       margin-bottom: 24px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .add-task-form:hover {
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    }
+
+    .form-header {
+      text-align: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid #f0f0f0;
+    }
+
+    .form-header h3 {
+      margin: 0 0 8px 0;
+      font-size: 20px;
+      font-weight: 600;
+      color: #202124;
+    }
+
+    .form-subtitle {
+      margin: 0;
+      color: #5f6368;
+      font-size: 14px;
     }
 
     .full-width {
       width: 100%;
-      margin-bottom: 16px;
+      margin-bottom: 20px;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .half-width {
+      flex: 1;
+    }
+
+    .compact-field {
+      font-size: 14px;
+    }
+
+    .compact-field .mat-mdc-form-field-infix {
+      min-height: 52px;
+    }
+
+    .compact-field mat-icon {
+      color: #5f6368;
     }
 
     .category-dot {
       display: inline-block;
-      width: 12px;
-      height: 12px;
+      width: 14px;
+      height: 14px;
       border-radius: 50%;
-      margin-right: 8px;
-      border: 2px solid rgba(255, 255, 255, 0.8);
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+      margin-right: 12px;
+      border: 2px solid rgba(255, 255, 255, 0.9);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+      flex-shrink: 0;
     }
 
     .category-option {
       display: flex;
       align-items: center;
-      justify-content: space-between;
       width: 100%;
-      padding: 4px 0;
+      padding: 8px 0;
     }
 
-    .category-color-preview {
-      width: 16px;
-      height: 16px;
-      border-radius: 4px;
-      border: 1px solid rgba(0, 0, 0, 0.1);
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    .category-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: #202124;
+    }
+
+    .status-option {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 4px 0;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .status-icon {
+      font-size: 18px !important;
+      width: 18px !important;
+      height: 18px !important;
+    }
+
+    .status-icon.pending {
+      color: #ff9800;
+    }
+
+    .status-icon.in-progress {
+      color: #2196f3;
+    }
+
+    .status-icon.completed {
+      color: #4caf50;
     }
 
     .form-actions {
       display: flex;
-      gap: 12px;
+      gap: 16px;
       justify-content: flex-end;
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid #f0f0f0;
+    }
+
+    .cancel-btn {
+      min-width: 120px;
+      padding: 0 20px;
+      border-radius: 8px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .cancel-btn:hover {
+      background-color: rgba(0, 0, 0, 0.04);
+    }
+
+    .submit-btn {
+      min-width: 140px;
+      padding: 0 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      box-shadow: 0 2px 4px rgba(33, 150, 243, 0.3);
+      transition: all 0.2s ease;
+    }
+
+    .submit-btn:hover:not([disabled]) {
+      box-shadow: 0 4px 8px rgba(33, 150, 243, 0.4);
+      transform: translateY(-1px);
+    }
+
+    .submit-btn:disabled {
+      opacity: 0.6;
+      box-shadow: none;
+    }
+
+    .form-actions button mat-icon {
+      margin-right: 8px;
+      font-size: 18px;
+    }
+
+    /* Form Field Hover Effects */
+    ::ng-deep .add-task-form .mat-mdc-form-field:not(.mat-form-field-disabled):hover .mat-mdc-form-field-outline {
+      color: rgba(33, 150, 243, 0.6) !important;
+    }
+
+    ::ng-deep .add-task-form .mat-mdc-form-field-focused .mat-mdc-form-field-outline {
+      color: #2196f3 !important;
+      border-width: 2px !important;
+    }
+
+    /* Select Panel Styling */
+    ::ng-deep .mat-mdc-select-panel {
+      border-radius: 8px !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    }
+
+    ::ng-deep .mat-mdc-option:hover {
+      background-color: rgba(33, 150, 243, 0.08) !important;
+    }
+
+    /* Date Picker Styling */
+    ::ng-deep .mat-datepicker-toggle {
+      color: #5f6368 !important;
+    }
+
+    ::ng-deep .mat-datepicker-toggle:hover {
+      color: #2196f3 !important;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .add-task-form {
+        padding: 20px 16px;
+        margin: 16px;
+      }
+
+      .form-row {
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .half-width {
+        width: 100%;
+      }
+
+      .form-actions {
+        flex-direction: column-reverse;
+        gap: 12px;
+      }
+
+      .form-actions button {
+        width: 100%;
+        min-width: auto;
+      }
     }
 
     .tasks-list {
@@ -393,7 +590,8 @@ export class TodayComponent implements OnInit {
   constructor(
     private taskService: TaskService,
     private categoryService: CategoryService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private router: Router
   ) {
     this.taskForm = this.fb.group({
       text: ['', [Validators.required, Validators.minLength(3)]],
@@ -404,8 +602,14 @@ export class TodayComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.loadCategories();
-    this.loadTodayTasks();
+    // Only load data if user is authenticated
+    const token = localStorage.getItem('token');
+    if (token) {
+      this.loadCategories();
+      this.loadTodayTasks();
+    } else {
+      console.log('User not authenticated, skipping data load');
+    }
   }
 
   loadCategories() {
@@ -415,7 +619,12 @@ export class TodayComponent implements OnInit {
           this.categories = response.data;
         }
       },
-      error: (error) => console.error('Error loading categories:', error)
+      error: (error) => {
+        console.error('Error loading categories:', error);
+        if (error.status === 401) {
+          this.router.navigate(['/login']);
+        }
+      }
     });
   }
 
@@ -430,7 +639,12 @@ export class TodayComponent implements OnInit {
           console.log(`Found ${this.todayTasks.length} tasks for today`);
         }
       },
-      error: (error) => console.error('Error loading tasks:', error)
+      error: (error) => {
+        console.error('Error loading tasks:', error);
+        if (error.status === 401) {
+          this.router.navigate(['/login']);
+        }
+      }
     });
   }
 
