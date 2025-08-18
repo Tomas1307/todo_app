@@ -12,7 +12,12 @@ services:
     ports:
       - "${DB_PORT}:5432"            
     volumes:
-      - postgres_data:/var/lib/postgresql/data 
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   backend:
     container_name: todo_app_container
@@ -23,7 +28,8 @@ services:
     env_file:
       - .env                         
     depends_on:
-      - db                    
+      db:
+        condition: service_healthy                   
     volumes:
       - ./backend/uploads:/app/uploads  
 

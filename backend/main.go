@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 
@@ -28,6 +29,22 @@ func main() {
 	userController := user.NewUserController(userService)
 
 	router := gin.Default()
+
+	// Configurar CORS middleware
+	router.Use(func(c *gin.Context) {
+		c.Header("Access-Control-Allow-Origin", "*")
+		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		c.Header("Access-Control-Allow-Headers", "Origin, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+		c.Header("Access-Control-Expose-Headers", "Content-Length")
+		c.Header("Access-Control-Allow-Credentials", "true")
+
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(http.StatusNoContent)
+			return
+		}
+
+		c.Next()
+	})
 
 	router.Static("/uploads", "./uploads")
 
