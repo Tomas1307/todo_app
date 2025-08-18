@@ -1,0 +1,738 @@
+{
+	"info": {
+		"_postman_id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+		"name": "Todo App API",
+		"description": "Documentación completa de la API REST para la aplicación Todo App. Esta API permite gestionar usuarios, categorías y tareas con autenticación JWT.\n\n**Base URL:** http://localhost:8080/api/v1\n\n**Autenticación:** JWT Token en header Authorization: Bearer {token}\n\n**Respuestas estándar:**\n- 200: Operación exitosa\n- 201: Recurso creado exitosamente\n- 400: Error en la solicitud (validación)\n- 401: No autorizado\n- 404: Recurso no encontrado\n- 500: Error interno del servidor",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "12345678"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"description": "Endpoints para registro y autenticación de usuarios",
+			"item": [
+				{
+					"name": "Register User",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "username",
+									"value": "john_doe",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "securePassword123",
+									"type": "text"
+								},
+								{
+									"key": "profile_img",
+									"type": "file",
+									"src": "/path/to/your/image.png",
+									"disabled": true
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/users/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								""
+							]
+						},
+						"description": "Registra un nuevo usuario en el sistema. Permite subir imagen de perfil opcional.\n\n**Formato:** multipart/form-data\n\n**Campos requeridos:**\n- username: Nombre de usuario único (text)\n- password: Contraseña del usuario (text)\n\n**Campos opcionales:**\n- profile_img: Archivo de imagen de perfil (file)\n\n**Headers:** No es necesario especificar Content-Type, Postman lo hace automáticamente para form-data.\n\n**Respuesta exitosa (201):**\n```json\n{\n  \"status_code\": 201,\n  \"message\": \"Usuario creado.\",\n  \"data\": {\n    \"id\": 1,\n    \"username\": \"john_doe\",\n    \"profile_img\": \"/uploads/avatars/1234567890.png\",\n    \"created_at\": \"2025-01-15T10:30:00Z\"\n  }\n}\n```\n\n**Nota:** La imagen es opcional. Si no se envía, el usuario se creará sin imagen de perfil."
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 201', function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test('Response has user data', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('data');",
+									"    pm.expect(responseJson.data).to.have.property('id');",
+									"    pm.expect(responseJson.data).to.have.property('username');",
+									"    pm.expect(responseJson).to.have.property('status_code', 201);",
+									"});",
+									"",
+									"pm.test('Username matches request', function () {",
+									"    const responseJson = pm.response.json();",
+									"    const requestUsername = pm.request.body.formdata.find(item => item.key === 'username').value;",
+									"    pm.expect(responseJson.data.username).to.equal(requestUsername);",
+									"});",
+									"",
+									"pm.test('Response has success message', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('message');",
+									"    pm.expect(responseJson.message).to.include('creado');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				},
+				{
+					"name": "Login User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"john_doe\",\n  \"password\": \"securePassword123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/users/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"login"
+							]
+						},
+						"description": "Autentica un usuario y devuelve un token JWT.\n\n**Formato:** application/json\n\n**Campos requeridos:**\n- username: Nombre de usuario registrado\n- password: Contraseña del usuario\n\n**Respuesta exitosa (200):**\n```json\n{\n  \"status_code\": 200,\n  \"message\": \"Inicio de sesión exitoso.\",\n  \"data\": {\n    \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\"\n  }\n}\n```\n\n**Nota:** El token devuelto debe incluirse en todas las solicitudes autenticadas como: `Authorization: Bearer {token}`"
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has token', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('data');",
+									"    pm.expect(responseJson.data).to.have.property('token');",
+									"    pm.expect(responseJson.data.token).to.be.a('string').and.not.empty;",
+									"    pm.expect(responseJson).to.have.property('status_code', 200);",
+									"});",
+									"",
+									"pm.test('Response has success message', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('message');",
+									"    pm.expect(responseJson.message).to.include('exitoso');",
+									"});",
+									"",
+									"// Store token for future requests",
+									"if (pm.response.code === 200) {",
+									"    const responseJson = pm.response.json();",
+									"    pm.environment.set('auth_token', responseJson.data.token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Categories",
+			"description": "Gestión de categorías para organizar tareas. Requiere autenticación.",
+			"item": [
+				{
+					"name": "Create Category",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Trabajo\",\n  \"description\": \"Tareas relacionadas con el trabajo\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/categories/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"categories",
+								""
+							]
+						},
+						"description": "Crea una nueva categoría para el usuario autenticado.\n\n**Campos requeridos:**\n- name: Nombre de la categoría\n\n**Campos opcionales:**\n- description: Descripción de la categoría\n\n**Headers requeridos:**\n- Authorization: Bearer {token}\n\n**Respuesta exitosa (201):**\n```json\n{\n  \"status_code\": 201,\n  \"message\": \"Categoría creada exitosamente.\",\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"Trabajo\",\n    \"description\": \"Tareas relacionadas con el trabajo\",\n    \"color\": \"#2196F3\",\n    \"user_id\": 1,\n    \"created_at\": \"2025-01-15T10:30:00Z\"\n  }\n}\n```"
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 201', function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test('Response has category data', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('data');",
+									"    pm.expect(responseJson.data).to.have.property('id');",
+									"    pm.expect(responseJson.data).to.have.property('name');",
+									"    pm.expect(responseJson.data).to.have.property('color');",
+									"    pm.expect(responseJson).to.have.property('status_code', 201);",
+									"});",
+									"",
+									"pm.test('Category name matches request', function () {",
+									"    const responseJson = pm.response.json();",
+									"    const requestJson = JSON.parse(pm.request.body.raw);",
+									"    pm.expect(responseJson.data.name).to.equal(requestJson.name);",
+									"});",
+									"",
+									"pm.test('Response has success message', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('message');",
+									"    pm.expect(responseJson.message).to.include('exitosamente');",
+									"});",
+									"",
+									"// Store category ID for future tests",
+									"if (pm.response.code === 201) {",
+									"    const responseJson = pm.response.json();",
+									"    pm.environment.set('category_id', responseJson.data.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				},
+				{
+					"name": "Get Categories",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/categories/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"categories",
+								""
+							]
+						},
+						"description": "Obtiene todas las categorías del usuario autenticado.\n\n**Headers requeridos:**\n- Authorization: Bearer {token}\n\n**Respuesta exitosa (200):**\n```json\n{\n  \"status_code\": 200,\n  \"message\": \"Categorías obtenidas exitosamente.\",\n  \"data\": [\n    {\n      \"id\": 1,\n      \"name\": \"Trabajo\",\n      \"description\": \"Tareas relacionadas con el trabajo\",\n      \"color\": \"#2196F3\",\n      \"user_id\": 1,\n      \"created_at\": \"2025-01-15T10:30:00Z\"\n    },\n    {\n      \"id\": 2,\n      \"name\": \"Personal\",\n      \"description\": \"Tareas personales\",\n      \"color\": \"#4CAF50\",\n      \"user_id\": 1,\n      \"created_at\": \"2025-01-15T11:00:00Z\"\n    }\n  ]\n}\n```"
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has categories array', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('data');",
+									"    pm.expect(responseJson.data).to.be.an('array');",
+									"    pm.expect(responseJson).to.have.property('status_code', 200);",
+									"});",
+									"",
+									"pm.test('Response has success message', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('message');",
+									"    pm.expect(responseJson.message).to.include('exitosamente');",
+									"});",
+									"",
+									"pm.test('Each category has required fields', function () {",
+									"    const responseJson = pm.response.json();",
+									"    if (responseJson.data.length > 0) {",
+									"        responseJson.data.forEach(category => {",
+									"            pm.expect(category).to.have.property('id');",
+									"            pm.expect(category).to.have.property('name');",
+									"            pm.expect(category).to.have.property('color');",
+									"            pm.expect(category).to.have.property('user_id');",
+									"        });",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				},
+				{
+					"name": "Delete Category",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/categories/{{category_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"categories",
+								"{{category_id}}"
+							]
+						},
+						"description": "Elimina una categoría específica del usuario autenticado.\n\n**Parámetros de ruta:**\n- id: ID de la categoría a eliminar\n\n**Headers requeridos:**\n- Authorization: Bearer {token}\n\n**Respuesta exitosa (200):**\n```json\n{\n  \"status_code\": 200,\n  \"message\": \"Categoría eliminada exitosamente.\"\n}\n```\n\n**Notas:**\n- Solo se pueden eliminar categorías que pertenezcan al usuario autenticado\n- Si la categoría tiene tareas asociadas, se debe manejar la eliminación en cascada o reasignación"
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has success message', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('message');",
+									"    pm.expect(responseJson.message).to.include('eliminada');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Tasks",
+			"description": "Gestión completa de tareas. Requiere autenticación.",
+			"item": [
+				{
+					"name": "Create Task",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"text\": \"Completar documentación de la API\",\n  \"due_date\": \"2025-01-20T15:30:00Z\",\n  \"category_id\": {{category_id}}\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/tasks/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks",
+								""
+							]
+						},
+						"description": "Crea una nueva tarea para el usuario autenticado.\n\n**Campos requeridos:**\n- text: Descripción de la tarea\n- category_id: ID de la categoría a la que pertenece\n\n**Campos opcionales:**\n- due_date: Fecha límite en formato ISO 8601\n\n**Headers requeridos:**\n- Authorization: Bearer {token}\n\n**Estados posibles:**\n- \"Sin Empezar\" (valor por defecto)\n- \"Empezada\"\n- \"Finalizada\"\n\n**Respuesta exitosa (201):**\n```json\n{\n  \"status_code\": 201,\n  \"message\": \"Tarea creada.\",\n  \"data\": {\n    \"id\": 1,\n    \"text\": \"Completar documentación de la API\",\n    \"created_at\": \"2025-01-15T10:30:00Z\",\n    \"due_date\": \"2025-01-20T15:30:00Z\",\n    \"status\": \"Sin Empezar\",\n    \"category_id\": 1,\n    \"user_id\": 1\n  }\n}\n```"
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 201', function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test('Response has task data', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('data');",
+									"    pm.expect(responseJson.data).to.have.property('id');",
+									"    pm.expect(responseJson.data).to.have.property('text');",
+									"    pm.expect(responseJson.data).to.have.property('status');",
+									"    pm.expect(responseJson.data).to.have.property('category_id');",
+									"    pm.expect(responseJson).to.have.property('status_code', 201);",
+									"});",
+									"",
+									"pm.test('Task text matches request', function () {",
+									"    const responseJson = pm.response.json();",
+									"    const requestJson = JSON.parse(pm.request.body.raw);",
+									"    pm.expect(responseJson.data.text).to.equal(requestJson.text);",
+									"});",
+									"",
+									"pm.test('Default status is Sin Empezar', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.data.status).to.equal('Sin Empezar');",
+									"});",
+									"",
+									"pm.test('Response has success message', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('message');",
+									"    pm.expect(responseJson.message).to.include('creada');",
+									"});",
+									"",
+									"// Store task ID for future tests",
+									"if (pm.response.code === 201) {",
+									"    const responseJson = pm.response.json();",
+									"    pm.environment.set('task_id', responseJson.data.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				},
+				{
+					"name": "Get User Tasks",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/tasks/user",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks",
+								"user"
+							]
+						},
+						"description": "Obtiene todas las tareas del usuario autenticado.\n\n**Headers requeridos:**\n- Authorization: Bearer {token}\n\n**Respuesta exitosa (200):**\n```json\n{\n  \"status_code\": 200,\n  \"message\": \"Tareas del usuario.\",\n  \"data\": [\n    {\n      \"id\": 1,\n      \"text\": \"Completar documentación de la API\",\n      \"created_at\": \"2025-01-15T10:30:00Z\",\n      \"due_date\": \"2025-01-20T15:30:00Z\",\n      \"status\": \"Sin Empezar\",\n      \"category_id\": 1,\n      \"user_id\": 1\n    },\n    {\n      \"id\": 2,\n      \"text\": \"Revisar código frontend\",\n      \"created_at\": \"2025-01-15T11:00:00Z\",\n      \"due_date\": null,\n      \"status\": \"Empezada\",\n      \"category_id\": 1,\n      \"user_id\": 1\n    }\n  ]\n}\n```"
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has tasks array', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('data');",
+									"    pm.expect(responseJson.data).to.be.an('array');",
+									"    pm.expect(responseJson).to.have.property('status_code', 200);",
+									"});",
+									"",
+									"pm.test('Response has success message', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('message');",
+									"    pm.expect(responseJson.message).to.include('usuario');",
+									"});",
+									"",
+									"pm.test('Each task has required fields', function () {",
+									"    const responseJson = pm.response.json();",
+									"    if (responseJson.data.length > 0) {",
+									"        responseJson.data.forEach(task => {",
+									"            pm.expect(task).to.have.property('id');",
+									"            pm.expect(task).to.have.property('text');",
+									"            pm.expect(task).to.have.property('status');",
+									"            pm.expect(task).to.have.property('category_id');",
+									"            pm.expect(task).to.have.property('user_id');",
+									"        });",
+									"    }",
+									"});",
+									"",
+									"pm.test('Task status is valid', function () {",
+									"    const responseJson = pm.response.json();",
+									"    const validStatuses = ['Sin Empezar', 'Empezada', 'Finalizada'];",
+									"    if (responseJson.data.length > 0) {",
+									"        responseJson.data.forEach(task => {",
+									"            pm.expect(validStatuses).to.include(task.status);",
+									"        });",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				},
+				{
+					"name": "Get Task by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/tasks/{{task_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks",
+								"{{task_id}}"
+							]
+						},
+						"description": "Obtiene los detalles de una tarea específica del usuario autenticado.\n\n**Parámetros de ruta:**\n- id: ID de la tarea a obtener\n\n**Headers requeridos:**\n- Authorization: Bearer {token}\n\n**Respuesta exitosa (200):**\n```json\n{\n  \"status_code\": 200,\n  \"message\": \"Detalle de la tarea.\",\n  \"data\": {\n    \"id\": 1,\n    \"text\": \"Completar documentación de la API\",\n    \"created_at\": \"2025-01-15T10:30:00Z\",\n    \"due_date\": \"2025-01-20T15:30:00Z\",\n    \"status\": \"Sin Empezar\",\n    \"category_id\": 1,\n    \"user_id\": 1\n  }\n}\n```\n\n**Notas:**\n- Solo se pueden obtener tareas que pertenezcan al usuario autenticado\n- Retorna 404 si la tarea no existe o no pertenece al usuario"
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has task data', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('data');",
+									"    pm.expect(responseJson.data).to.have.property('id');",
+									"    pm.expect(responseJson.data).to.have.property('text');",
+									"    pm.expect(responseJson.data).to.have.property('status');",
+									"    pm.expect(responseJson).to.have.property('status_code', 200);",
+									"});",
+									"",
+									"pm.test('Response has success message', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('message');",
+									"    pm.expect(responseJson.message).to.include('tarea');",
+									"});",
+									"",
+									"pm.test('Task ID matches request parameter', function () {",
+									"    const responseJson = pm.response.json();",
+									"    const requestedId = parseInt(pm.environment.get('task_id'));",
+									"    pm.expect(responseJson.data.id).to.equal(requestedId);",
+									"});",
+									"",
+									"pm.test('Task status is valid', function () {",
+									"    const responseJson = pm.response.json();",
+									"    const validStatuses = ['Sin Empezar', 'Empezada', 'Finalizada'];",
+									"    pm.expect(validStatuses).to.include(responseJson.data.status);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				},
+				{
+					"name": "Update Task",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"text\": \"Completar documentación de la API - Actualizada\",\n  \"due_date\": \"2025-01-22T15:30:00Z\",\n  \"status\": \"Empezada\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/tasks/{{task_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks",
+								"{{task_id}}"
+							]
+						},
+						"description": "Actualiza una tarea específica del usuario autenticado.\n\n**Parámetros de ruta:**\n- id: ID de la tarea a actualizar\n\n**Headers requeridos:**\n- Authorization: Bearer {token}\n\n**Campos opcionales (se actualizan solo los campos enviados):**\n- text: Nueva descripción de la tarea\n- due_date: Nueva fecha límite en formato ISO 8601 (null para eliminar)\n- status: Nuevo estado (\"Sin Empezar\", \"Empezada\", \"Finalizada\")\n\n**Respuesta exitosa (200):**\n```json\n{\n  \"status_code\": 200,\n  \"message\": \"Tarea actualizada.\",\n  \"data\": {\n    \"id\": 1,\n    \"text\": \"Completar documentación de la API - Actualizada\",\n    \"created_at\": \"2025-01-15T10:30:00Z\",\n    \"due_date\": \"2025-01-22T15:30:00Z\",\n    \"status\": \"Empezada\",\n    \"category_id\": 1,\n    \"user_id\": 1\n  }\n}\n```\n\n**Notas:**\n- Solo se pueden actualizar tareas que pertenezcan al usuario autenticado\n- Los campos no enviados mantienen su valor actual\n- Para eliminar due_date, enviar null como valor"
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has updated task data', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('data');",
+									"    pm.expect(responseJson).to.have.property('message');",
+									"    pm.expect(responseJson.message).to.include('actualizada');",
+									"    pm.expect(responseJson).to.have.property('status_code', 200);",
+									"});",
+									"",
+									"pm.test('Task data reflects updates', function () {",
+									"    const responseJson = pm.response.json();",
+									"    const requestJson = JSON.parse(pm.request.body.raw);",
+									"    ",
+									"    if (requestJson.text) {",
+									"        pm.expect(responseJson.data.text).to.equal(requestJson.text);",
+									"    }",
+									"    if (requestJson.status) {",
+									"        pm.expect(responseJson.data.status).to.equal(requestJson.status);",
+									"    }",
+									"});",
+									"",
+									"pm.test('Task status is valid', function () {",
+									"    const responseJson = pm.response.json();",
+									"    const validStatuses = ['Sin Empezar', 'Empezada', 'Finalizada'];",
+									"    pm.expect(validStatuses).to.include(responseJson.data.status);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				},
+				{
+					"name": "Delete Task",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/tasks/{{task_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks",
+								"{{task_id}}"
+							]
+						},
+						"description": "Elimina una tarea específica del usuario autenticado.\n\n**Parámetros de ruta:**\n- id: ID de la tarea a eliminar\n\n**Headers requeridos:**\n- Authorization: Bearer {token}\n\n**Respuesta exitosa (200):**\n```json\n{\n  \"status_code\": 200,\n  \"message\": \"Tarea eliminada.\"\n}\n```\n\n**Notas:**\n- Solo se pueden eliminar tareas que pertenezcan al usuario autenticado\n- La eliminación es permanente y no se puede deshacer\n- Retorna 404 si la tarea no existe o no pertenece al usuario"
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has success message', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('message');",
+									"    pm.expect(responseJson.message).to.include('eliminada');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global pre-request script",
+					"// You can add global setup here if needed"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global test script",
+					"pm.test('Response time is less than 5000ms', function () {",
+					"    pm.expect(pm.response.responseTime).to.be.below(5000);",
+					"});",
+					"",
+					"pm.test('Response has proper content type', function () {",
+					"    if (pm.response.headers.get('Content-Type')) {",
+					"        pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+					"    }",
+					"});"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080/api/v1",
+			"type": "string"
+		}
+	]
+}
