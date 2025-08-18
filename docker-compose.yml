@@ -12,7 +12,12 @@ services:
     ports:
       - "${DB_PORT}:5432"            
     volumes:
-      - postgres_data:/var/lib/postgresql/data 
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   backend:
     container_name: todo_app_container
@@ -23,19 +28,21 @@ services:
     env_file:
       - .env                         
     depends_on:
-      - db                    
+      db:
+        condition: service_healthy                   
     volumes:
-      - ./backend/uploads:/app/uploads  
+      - ./backend/uploads:/app/uploads
 
-  #frontend:
-  #  container_name: todo_app_frontend
-  #  build:
-  #    context: ./frontend  # Apunta a la carpeta del frontend
-  #  ports:
-  #    # Expone el puerto 3000 de tu PC y lo mapea al puerto 80 de Nginx
-  #    - "3000:80"
-  #  depends_on:
-  #    - backend
-
+  frontend:
+    container_name: todo_frontend_container
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    restart: unless-stopped  
+    
 volumes:
   postgres_data:

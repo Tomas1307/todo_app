@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 	"todo_app/src/category"
 	"todo_app/src/task"
 	"todo_app/src/user"
@@ -28,13 +29,29 @@ func ConnectDB() *gorm.DB {
 
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
 		host, user, password, dbname, port)
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-	if err != nil {
-		log.Fatalf("Error fatal al conectar a la base de datos: %v", err)
+
+	// Implementar reintentos para la conexión
+	var db *gorm.DB
+	maxRetries := 10
+	retryDelay := 2 * time.Second
+
+	for i := 0; i < maxRetries; i++ {
+		db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+		if err == nil {
+			log.Println("Conexión a la base de datos establecida exitosamente.")
+			return db
+		}
+
+		log.Printf("Intento %d/%d - Error al conectar a la base de datos: %v", i+1, maxRetries, err)
+		
+		if i < maxRetries-1 {
+			log.Printf("Reintentando en %v...", retryDelay)
+			time.Sleep(retryDelay)
+		}
 	}
 
-	log.Println("Conexión a la base de datos establecida exitosamente.")
-	return db
+	log.Fatalf("Error fatal al conectar a la base de datos después de %d intentos: %v", maxRetries, err)
+	return nil
 }
 
 func MigrateTables(db *gorm.DB) {
