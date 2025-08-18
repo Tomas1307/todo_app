@@ -31,17 +31,18 @@ services:
       db:
         condition: service_healthy                   
     volumes:
-      - ./backend/uploads:/app/uploads  
+      - ./backend/uploads:/app/uploads
 
-  #frontend:
-  #  container_name: todo_app_frontend
-  #  build:
-  #    context: ./frontend  # Apunta a la carpeta del frontend
-  #  ports:
-  #    # Expone el puerto 3000 de tu PC y lo mapea al puerto 80 de Nginx
-  #    - "3000:80"
-  #  depends_on:
-  #    - backend
-
+  frontend:
+    container_name: todo_frontend_container
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    restart: unless-stopped  
+    
 volumes:
   postgres_data:

@@ -4,12 +4,13 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Category, CreateCategoryRequest, UpdateCategoryRequest, CategoryResponse } from '../models/category.model';
 import { AuthService } from './auth.service';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CategoryService {
-  private apiUrl = 'http://localhost:8080/api/v1/categories';
+  private apiUrl = `${environment.apiUrl}/api/v1/categories`;
   
   // Array de colores predefinidos para las categorías (mismo que TaskService)
   private categoryColors = [
