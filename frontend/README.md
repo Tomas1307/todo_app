@@ -1,27 +1,130 @@
-# TodoFrontend
+# Proyecto To-Do List (Frontend)
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 18.2.12.
+Este es el frontend para la aplicación de gestión de tareas, desarrollado como parte del ejercicio de nivelación para la Maestría en Ingeniería de Software de la Universidad de los Andes.
 
-## Development server
+La aplicación web está construida con **Angular 18**, **Angular Material** y se conecta al backend a través de una API REST. Todo el entorno está containerizado con **Docker**.
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+## Tecnologías Utilizadas
+* **Framework:** Angular 18
+* **UI Library:** Angular Material
+* **Lenguaje:** TypeScript
+* **Estilos:** SCSS
+* **HTTP Client:** Angular HttpClient
+* **Routing:** Angular Router
+* **Forms:** Angular Reactive Forms
+* **Containerización:** Docker & Nginx
 
-## Code scaffolding
+---
+## Prerrequisitos
+Para ejecutar este proyecto, necesitas tener instalado:
+* [Docker](https://www.docker.com/get-started)
+* [Docker Compose](https://docs.docker.com/compose/install/)
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+Para desarrollo local (opcional):
+* [Node.js](https://nodejs.org/) (versión 18 o superior)
+* [Angular CLI](https://angular.dev/tools/cli)
 
-## Build
+---
+## Cómo Ejecutar el Proyecto con Docker (Recomendado)
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+Esta es la forma más sencilla de levantar toda la aplicación (frontend + backend + base de datos).
 
-## Running unit tests
+### 1. Clonar el Repositorio
+```bash
+git clone <URL_de_tu_repositorio>
+cd <nombre_del_repositorio>
+```
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+### 2. Levantar los Contenedores
+Desde la **raíz del proyecto** (donde está el `docker-compose.yml`), ejecuta el siguiente comando:
+```bash
+docker-compose up --build
+```
 
-## Running end-to-end tests
+La primera vez puede tardar unos minutos mientras se descargan y construyen las imágenes. Una vez finalizado, la aplicación estará disponible en:
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+* **Frontend:** http://localhost:3000
+* **Backend API:** http://localhost:8080
 
-## Further help
+### 3. Detener los Contenedores
+Para detener los contenedores, presiona `Ctrl + C` en la misma terminal, o abre una nueva y ejecuta:
+```bash
+docker-compose down
+```
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+---
+## Desarrollo Local (Opcional)
+
+Si prefieres desarrollar sin Docker:
+
+### 1. Instalar Dependencias
+```bash
+cd frontend
+npm install
+```
+
+### 2. Servidor de Desarrollo
+```bash
+ng serve
+```
+
+La aplicación estará disponible en `http://localhost:4200/`. La aplicación se recargará automáticamente si cambias algún archivo.
+
+### 3. Construir para Producción
+```bash
+ng build
+```
+
+Los archivos construidos se almacenarán en el directorio `dist/`.
+
+---
+## Estructura del Proyecto
+
+```
+frontend/
+├── src/
+│   ├── app/
+│   │   ├── components/          # Componentes de la aplicación
+│   │   │   ├── auth/           # Componentes de autenticación
+│   │   │   ├── dashboard/      # Componente principal
+│   │   │   ├── tasks/          # Gestión de tareas
+│   │   │   └── categories/     # Gestión de categorías
+│   │   ├── services/           # Servicios para API
+│   │   ├── models/             # Modelos de datos
+│   │   └── guards/             # Guards de autenticación
+│   ├── styles.scss             # Estilos globales
+│   └── index.html              # Página principal
+├── docker files
+├── Dockerfile                  # Configuración Docker
+└── package.json               # Dependencias del proyecto
+```
+
+---
+## Funcionalidades
+
+* **Autenticación:** Login y registro de usuarios
+* **Dashboard:** Vista general de tareas y estadísticas
+* **Gestión de Tareas:** Crear, editar, eliminar y marcar como completadas
+* **Categorías:** Organizar tareas por categorías
+* **Filtros:** Filtrar tareas por estado y categoría
+* **Responsive Design:** Optimizado para dispositivos móviles y desktop
+
+---
+## API Endpoints
+
+El frontend se comunica con el backend a través de los siguientes endpoints:
+
+* **Autenticación:**
+  - `POST /api/v1/users/` - Registro de usuario
+  - `POST /api/v1/users/login` - Login de usuario
+
+* **Tareas:**
+  - `GET /api/v1/tasks/user` - Obtener tareas del usuario
+  - `POST /api/v1/tasks/` - Crear nueva tarea
+  - `PUT /api/v1/tasks/:id` - Actualizar tarea
+  - `DELETE /api/v1/tasks/:id` - Eliminar tarea
+
+* **Categorías:**
+  - `GET /api/v1/categories/` - Obtener categorías
+  - `POST /api/v1/categories/` - Crear nueva categoría
+  - `DELETE /api/v1/categories/:id` - Eliminar categoría
