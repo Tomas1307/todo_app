@@ -13,6 +13,7 @@ services:
       - "${DB_PORT}:5432"            
     volumes:
       - postgres_data:/var/lib/postgresql/data 
+      - ./database/init:/docker-entrypoint-initdb.d
 
   backend:
     container_name: todo_app_container
