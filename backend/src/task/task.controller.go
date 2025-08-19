@@ -25,7 +25,8 @@ func (ctrl *TaskController) CreateTask(c *gin.Context) {
 		return
 	}
 
-	newTask, err := ctrl.service.CreateTask(1, dto)
+	userID := c.MustGet("userID").(uint)
+	newTask, err := ctrl.service.CreateTask(userID, dto)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, response.APIResponse{StatusCode: http.StatusInternalServerError, Error: err.Error()})
 		return
@@ -35,7 +36,8 @@ func (ctrl *TaskController) CreateTask(c *gin.Context) {
 }
 
 func (ctrl *TaskController) GetTasksByUser(c *gin.Context) {
-	tasks, err := ctrl.service.GetTasksByUserID(1)
+	userID := c.MustGet("userID").(uint)
+	tasks, err := ctrl.service.GetTasksByUserID(userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, response.APIResponse{StatusCode: http.StatusInternalServerError, Error: err.Error()})
 		return
@@ -73,7 +75,8 @@ func (ctrl *TaskController) UpdateTask(c *gin.Context) {
 		return
 	}
 
-	updatedTask, err := ctrl.service.UpdateTask(1, uint(taskID), dto)
+	userID := c.MustGet("userID").(uint)
+	updatedTask, err := ctrl.service.UpdateTask(userID, uint(taskID), dto)
 	if err != nil {
 		c.JSON(http.StatusNotFound, response.APIResponse{StatusCode: http.StatusNotFound, Error: err.Error()})
 		return
@@ -90,7 +93,8 @@ func (ctrl *TaskController) DeleteTask(c *gin.Context) {
 		return
 	}
 
-	err = ctrl.service.DeleteTask(1, uint(taskID))
+	userID := c.MustGet("userID").(uint)
+	err = ctrl.service.DeleteTask(userID, uint(taskID))
 	if err != nil {
 		c.JSON(http.StatusNotFound, response.APIResponse{StatusCode: http.StatusNotFound, Error: err.Error()})
 		return
