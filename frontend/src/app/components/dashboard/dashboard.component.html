@@ -1,0 +1,265 @@
+<div class="dashboard-container">
+  <!-- Header Toolbar -->
+  <mat-toolbar color="primary" class="dashboard-header">
+    <div class="header-content">
+      <div class="header-left">
+        <mat-icon class="app-icon">task_alt</mat-icon>
+        <span class="app-title">Todo Board</span>
+      </div>
+      <div class="header-right">
+        <span *ngIf="currentUser" class="user-greeting">{{ currentUser.username }}</span>
+        <button mat-icon-button [matMenuTriggerFor]="userMenu" class="user-menu">
+          <mat-icon>account_circle</mat-icon>
+        </button>
+        <mat-menu #userMenu="matMenu">
+          <button mat-menu-item (click)="logout()">
+            <mat-icon>logout</mat-icon>
+            <span>Logout</span>
+          </button>
+        </mat-menu>
+      </div>
+    </div>
+  </mat-toolbar>
+
+  <div class="dashboard-layout">
+    <!-- Sidebar -->
+    <mat-sidenav-container class="sidenav-container">
+      <mat-sidenav mode="side" opened="true" class="sidebar">
+        
+        <!-- Quick Actions -->
+        <div class="sidebar-section">
+          <h3 class="sidebar-title">Quick Actions</h3>
+          <button mat-raised-button color="primary" class="add-task-btn" (click)="showAddTask = !showAddTask">
+            <mat-icon>add</mat-icon>
+            Add Task
+          </button>
+        </div>
+
+        <!-- Date Filter -->
+        <div class="sidebar-section">
+          <h3 class="sidebar-title">
+            <mat-icon>today</mat-icon>
+            Today
+          </h3>
+          <div class="today-stats">
+            <mat-chip-set>
+              <mat-chip color="primary" selected>
+                {{ getTodayTasksCount() }} tasks
+              </mat-chip>
+            </mat-chip-set>
+          </div>
+        </div>
+
+        <!-- Categories -->
+        <div class="sidebar-section">
+          <h3 class="sidebar-title">
+            <mat-icon>category</mat-icon>
+            Categories
+          </h3>
+          <mat-list class="category-list">
+            <mat-list-item 
+              *ngFor="let category of categories" 
+              class="category-item"
+              (click)="selectedCategory = selectedCategory === category.id ? null : category.id">
+              <div class="category-content">
+                <div 
+                  class="category-color" 
+                  [style.background-color]="category.color">
+                </div>
+                <span class="category-name">{{ category.name }}</span>
+                <mat-chip class="task-count">
+                  {{ getTasksByCategory(category.id).length }}
+                </mat-chip>
+              </div>
+            </mat-list-item>
+          </mat-list>
+        </div>
+
+        <!-- Quick Date Selection -->
+        <div class="sidebar-section">
+          <h3 class="sidebar-title">
+            <mat-icon>schedule</mat-icon>
+            Quick Dates
+          </h3>
+          <div class="quick-dates">
+            <button mat-stroked-button class="date-btn">
+              <mat-icon>wb_sunny</mat-icon>
+              Tomorrow
+              <mat-chip>Wed</mat-chip>
+            </button>
+            <button mat-stroked-button class="date-btn">
+              <mat-icon>date_range</mat-icon>
+              This week
+              <mat-chip>Thu</mat-chip>
+            </button>
+            <button mat-stroked-button class="date-btn">
+              <mat-icon>weekend</mat-icon>
+              This weekend
+              <mat-chip>Sat</mat-chip>
+            </button>
+            <button mat-stroked-button class="date-btn">
+              <mat-icon>next_week</mat-icon>
+              Next week
+              <mat-chip>Mon Jan 29</mat-chip>
+            </button>
+            <button mat-stroked-button class="date-btn">
+              <mat-icon>event_available</mat-icon>
+              No Date
+            </button>
+          </div>
+        </div>
+
+      </mat-sidenav>
+
+      <!-- Main Content -->
+      <mat-sidenav-content class="main-content">
+        
+        <!-- Add Task Form -->
+        <div class="add-task-section" *ngIf="showAddTask">
+          <mat-card class="add-task-card">
+            <mat-card-header>
+              <mat-card-title>Nueva Tarea</mat-card-title>
+              <mat-card-subtitle>Agrega una nueva tarea a tu lista</mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content>
+              <form [formGroup]="taskForm" (ngSubmit)="addTask()" class="task-form">
+                <div class="form-row">
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Title</mat-label>
+                    <input matInput formControlName="title" placeholder="Enter task title">
+                  </mat-form-field>
+                </div>
+                
+                <div class="form-row">
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Description</mat-label>
+                    <textarea matInput formControlName="description" rows="3" placeholder="Enter task description"></textarea>
+                  </mat-form-field>
+                </div>
+                
+                <div class="form-row form-columns">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Category</mat-label>
+                    <mat-select formControlName="categoryId">
+                      <mat-option *ngFor="let category of categories" [value]="category.id">
+                        <div class="category-option">
+                          <div class="category-color-small" [style.background-color]="category.color"></div>
+                          {{ category.name }}
+                        </div>
+                      </mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                  
+                  <mat-form-field appearance="outline">
+                    <mat-label>Priority</mat-label>
+                    <mat-select formControlName="priority">
+                      <mat-option value="low">Low</mat-option>
+                      <mat-option value="medium">Medium</mat-option>
+                      <mat-option value="high">High</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+                
+                <div class="form-actions">
+                  <button mat-button type="button" (click)="cancelAddTask()">Cancel</button>
+                  <button mat-raised-button color="primary" type="submit" [disabled]="!taskForm.valid">
+                    Add Task
+                  </button>
+                </div>
+              </form>
+            </mat-card-content>
+          </mat-card>
+        </div>
+
+        <!-- Kanban Board -->
+        <div class="kanban-board" cdkDropListGroup>
+          <div class="kanban-column" *ngFor="let column of kanbanColumns">
+            <div class="column-header" [style.border-color]="column.color">
+              <div class="column-title">
+                <mat-icon [style.color]="column.color">{{ column.icon }}</mat-icon>
+                <h3>{{ column.title }}</h3>
+                <mat-chip [style.background-color]="column.color" class="task-count-chip">
+                  {{ column.tasks.length }}
+                </mat-chip>
+              </div>
+            </div>
+            
+            <div 
+              class="task-list"
+              cdkDropList
+              [id]="column.id + '-list'"
+              [cdkDropListData]="column.tasks"
+              (cdkDropListDropped)="onTaskDrop($event)">
+              
+              <div class="task-card" 
+                   *ngFor="let task of column.tasks" 
+                   cdkDrag>
+                <div class="task-content">
+                  <div class="task-header">
+                    <h4 class="task-title" [class.overdue]="isTaskOverdue(task)">
+                      {{ task.title }}
+                    </h4>
+                    <div class="task-priority" 
+                         [style.background-color]="getPriorityColor(task.priority)">
+                    </div>
+                  </div>
+                  
+                  <p class="task-description" *ngIf="task.description">
+                    {{ task.description }}
+                  </p>
+                  
+                  <div class="task-footer">
+                    <div class="task-meta">
+                      <mat-chip class="category-chip" 
+                               *ngIf="task.category"
+                               [style.background-color]="task.category.color + '20'"
+                               [style.color]="task.category.color">
+                        {{ task.category.name }}
+                      </mat-chip>
+                      
+                      <span class="due-date" *ngIf="task.dueDate" 
+                            [class.overdue]="isTaskOverdue(task)">
+                        <mat-icon>schedule</mat-icon>
+                        {{ task.dueDate | date:'MMM d' }}
+                      </span>
+                    </div>
+                    
+                    <button mat-icon-button [matMenuTriggerFor]="taskMenu" class="task-menu-btn">
+                      <mat-icon>more_vert</mat-icon>
+                    </button>
+                    <mat-menu #taskMenu="matMenu">
+                      <button mat-menu-item>
+                        <mat-icon>edit</mat-icon>
+                        <span>Edit</span>
+                      </button>
+                      <button mat-menu-item>
+                        <mat-icon>delete</mat-icon>
+                        <span>Delete</span>
+                      </button>
+                    </mat-menu>
+                  </div>
+                </div>
+                
+                <!-- Drag Preview -->
+                <div class="task-card drag-preview" *cdkDragPreview>
+                  <div class="task-content">
+                    <div class="task-header">
+                      <h4 class="task-title">{{ task.title }}</h4>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Empty State -->
+              <div class="empty-state" *ngIf="column.tasks.length === 0">
+                <mat-icon [style.color]="column.color">{{ column.icon }}</mat-icon>
+                <p>No tasks in {{ column.title.toLowerCase() }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </mat-sidenav-content>
+    </mat-sidenav-container>
+  </div>
+</div>
