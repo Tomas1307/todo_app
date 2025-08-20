@@ -2,6 +2,13 @@
 
 Este es un proyecto completo de gestión de tareas desarrollado como parte del ejercicio de nivelación para la materia Desarollo de soluciones cloud de la Universidad de los Andes.
 
+## Integrantes
+
+Tomas Acosta Bernal - 20201127 - t.acosta@uniandes.edu.co
+Samuel Romero Yepez - 201518954 - sj.romero10@uniandes.edu.co
+Alejandro Herrera Jiménez - 201915788 - a.herrera20@uniandes.edu.co
+Mauricio Ramírez Montilla -202522791 - m.ramirezm23@uniandes.edu.co
+
 ## Descripción General
 
 La aplicación permite a los usuarios gestionar sus tareas diarias de manera eficiente a través de una interfaz web moderna y una API REST robusta.
@@ -200,6 +207,7 @@ Este proyecto fue desarrollado como ejercicio académico. Para contribuir:
 3. Commit tus cambios (`git commit -am 'Agregar nueva funcionalidad'`)
 4. Push a la rama (`git push origin feature/nueva-funcionalidad`)
 5. Crea un Pull Request
+
 
 
 
