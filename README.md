@@ -179,8 +179,6 @@ docker-compose logs backend
 docker-compose logs db
 ```
 
-## Control versiones
-
 ## Control de Versiones
 
 El control de versiones seguido en este proyecto se realizó utilizando Git y se estructuró de la siguiente manera:
@@ -202,6 +200,7 @@ Este proyecto fue desarrollado como ejercicio académico. Para contribuir:
 3. Commit tus cambios (`git commit -am 'Agregar nueva funcionalidad'`)
 4. Push a la rama (`git push origin feature/nueva-funcionalidad`)
 5. Crea un Pull Request
+
 
 
 
