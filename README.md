@@ -179,6 +179,20 @@ docker-compose logs backend
 docker-compose logs db
 ```
 
+## Control versiones
+
+## Control de Versiones
+
+El control de versiones seguido en este proyecto se realizó utilizando Git y se estructuró de la siguiente manera:
+
+1. **Rama `main`:** Esta rama contiene la versión estable y en producción del proyecto.
+2. **Rama `dev`:** La rama `dev` fue utilizada para el desarrollo de nuevas funcionalidades y pruebas. Todos los cambios se integraban aquí antes de ser considerados para producción.
+3. **Ramas auxiliares:** Se crearon ramas auxiliares desde `dev` para desarrollar características específicas o realizar correcciones puntuales. Una vez completadas las tareas, estas ramas se fusionaban de nuevo en `dev`.
+4. **Fusión final:** Cuando las características de `dev` estaban listas y probadas, se realizaba un merge final de `dev` a `main` para generar una nueva versión estable del proyecto.
+
+Este flujo de trabajo garantiza que el proyecto mantenga una estructura organizada y controlada, permitiendo una fácil colaboración entre los desarrolladores.
+
+
 ## Contribución
 
 Este proyecto fue desarrollado como ejercicio académico. Para contribuir:
@@ -188,5 +202,6 @@ Este proyecto fue desarrollado como ejercicio académico. Para contribuir:
 3. Commit tus cambios (`git commit -am 'Agregar nueva funcionalidad'`)
 4. Push a la rama (`git push origin feature/nueva-funcionalidad`)
 5. Crea un Pull Request
+
 
 
